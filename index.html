@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            /* Установлен фиксированный темный фон приложения */
+            /* Фиксированный темный фон приложения */
             --tg-bg: #1A1A1C;
             --tg-sec-bg: #2c2c2e;
             --tg-text: #ffffff;
@@ -284,15 +284,60 @@
             #add-custom-q-btn { width: 100%; border-radius: 8px; margin-bottom: 10px; }
         }
 
-        /* PDF Styles */
-        .pdf-export-mode { background-color: #ffffff !important; color: #000000 !important; }
-        .pdf-export-mode .view-note { background-color: #ffffff !important; padding: 40px !important; }
+        /* --- PDF EXPORT STYLES (TABLET LOOK, CENTERED) --- */
+        .pdf-export-mode { 
+            background-color: #ffffff !important; 
+            color: #000000 !important; 
+        }
+        
+        /* Основной контейнер конспекта в PDF */
+        .pdf-export-mode #note-details { 
+            width: 750px !important; 
+            margin: 0 auto !important; 
+            padding: 40px !important; 
+            background-color: #ffffff !important;
+            overflow: visible !important;
+        }
+
+        /* Принудительный горизонтальный макет (планшетная версия) */
+        .pdf-export-mode .view-header-flex { 
+            flex-direction: row !important; 
+            align-items: flex-start !important; 
+            text-align: left !important;
+            justify-content: flex-start !important;
+            border-bottom-color: #eeeeee !important;
+        }
+
+        .pdf-export-mode .view-book-side { 
+            flex-direction: row !important; 
+            align-items: flex-start !important; 
+            text-align: left !important;
+            gap: 25px !important;
+        }
+
+        .pdf-export-mode .view-actions-side { display: none !important; }
+
         .pdf-export-mode h1, .pdf-export-mode h2, .pdf-export-mode .a { color: #000000 !important; }
+        .pdf-export-mode .q, .pdf-export-mode .view-rating-item span:first-child { color: #555555 !important; }
+        
         .pdf-export-mode .rating-badge {
             color: #000000 !important;
             border: 1px solid rgba(0,0,0,0.2) !important;
             background-color: rgba(0,0,0,0.05) !important;
             box-shadow: none !important;
+            top: 5px !important;
+            right: 5px !important;
+            position: absolute !important;
+        }
+
+        .pdf-export-mode .book-cover {
+            overflow: visible !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+            border: 1px solid #eeeeee !important;
+        }
+        
+        .pdf-export-mode .view-detailed-ratings {
+            border-top-color: #eeeeee !important;
         }
     </style>
 </head>
@@ -374,16 +419,31 @@
         </div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Глобальный перехват ошибок
+        window.addEventListener('unhandledrejection', function(event) {
+            console.warn('Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'reading-journal-v1';
 
         let currentEditingId = null;
         let selectedCoverBase64 = null;
-        let mockBooks = [
-            { id: 1, title: 'Чёртова кукла', author: 'Зинаида Гиппиус', month: 'Январь', year: '2026', tags: ['#классика'], img: 'image_2.png', rating: 9.2, answers: {"о чём эта книга в целом?": "История о поиске смысла в эпоху перемен."}, criteria: [9,10,9,9,10,9,9,9,9,9] }
-        ];
+        let books = [];
+        let user = null;
+
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
         const questionsPool = [
             "кто главные персонажи и какую роль они играют?", "какие отношения или конфликты лежат в основе истории?", "о чём эта книга в целом?", 
@@ -402,26 +462,134 @@
             "Перечитываемость", "Концовка"
         ];
 
-        // ИКОНКИ
         const iconEdit = '<svg viewBox="0 0 512 511" xmlns="http://www.w3.org/2000/svg"><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"></path><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"></path><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"></path></svg>';
-        
         const iconPdf = '<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><g><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></g></svg>';
-        
         const iconTrash = '<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>';
 
-        function populateYears() {
-            const yearSelect = document.getElementById('f-year');
-            yearSelect.innerHTML = '';
-            const currentYear = new Date().getFullYear();
-            for (let y = currentYear + 5; y >= 1950; y--) {
-                const opt = document.createElement('option');
-                opt.value = y; opt.textContent = y;
-                if (y === currentYear) opt.selected = true;
-                yearSelect.appendChild(opt);
+        // Init Auth
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) loadBooks();
+        });
+
+        // Data Storage
+        function loadBooks() {
+            if (!user) return;
+            const booksCol = collection(db, 'artifacts', appId, 'users', user.uid, 'books');
+            onSnapshot(booksCol, (snapshot) => {
+                books = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAll();
+            }, (err) => console.error("Firestore error:", err));
+        }
+
+        window.saveBook = async () => {
+            if (!user) return;
+            const sliders = document.querySelectorAll('.rating-slider');
+            const criteria = Array.from(sliders).map(s => parseInt(s.value));
+            const avgRating = (criteria.reduce((a, b) => a + b, 0) / 10).toFixed(1);
+            const answers = {};
+            document.querySelectorAll('.q-item').forEach(item => {
+                const label = item.querySelector('label')?.innerText || item.querySelector('.custom-q-input')?.value;
+                const text = item.querySelector('textarea').value;
+                if(label && label.trim()) answers[label] = text;
+            });
+
+            const id = currentEditingId || Date.now().toString();
+            const bookData = {
+                title: document.getElementById('f-title').value || 'Без названия',
+                author: document.getElementById('f-author').value || 'Неизвестен',
+                genre: document.getElementById('f-genre').value || '',
+                month: document.getElementById('f-month').value,
+                year: document.getElementById('f-year').value,
+                rating: avgRating,
+                img: selectedCoverBase64 || 'image_2.png',
+                tags: document.getElementById('f-tags').value.split(',').map(t => t.trim().startsWith('#') ? t.trim() : '#' + t.trim()).filter(t => t !== '#'),
+                answers, criteria
+            };
+
+            const bookRef = doc(db, 'artifacts', appId, 'users', user.uid, 'books', id);
+            await setDoc(bookRef, bookData);
+            
+            tg.HapticFeedback.notificationOccurred('success');
+            switchTab('all');
+        }
+
+        window.deleteBook = (id) => {
+            if (!user) return;
+            tg.showPopup({
+                title: 'Удаление',
+                message: 'Вы действительно хотите удалить этот конспект?',
+                buttons: [
+                    {id: 'delete', type: 'destructive', text: 'Удалить'},
+                    {id: 'cancel', type: 'cancel', text: 'Отмена'}
+                ]
+            }, async (buttonId) => {
+                if (buttonId === 'delete') {
+                    const bookRef = doc(db, 'artifacts', appId, 'users', user.uid, 'books', id);
+                    await deleteDoc(bookRef);
+                    tg.HapticFeedback.notificationOccurred('success');
+                    switchTab('all');
+                }
+            });
+        }
+
+        // PDF Export ( ট্যাবলেট Version, Centered )
+        window.exportPDF = async (bookTitle) => {
+            const element = document.getElementById('note-details');
+            if (!element) return;
+            
+            const btn = document.querySelector('.btn-base.fill:nth-child(2)') || document.querySelector('.btn-mini-action:nth-child(2)');
+            if (btn) btn.disabled = true;
+
+            try {
+                // Применяем класс для планшетного вида и центрирования
+                document.body.classList.add('pdf-export-mode');
+
+                const opt = {
+                    margin: 10,
+                    filename: `Reading_Journal_${bookTitle}.pdf`,
+                    image: { type: 'jpeg', quality: 1.0 },
+                    html2canvas: { 
+                        scale: 3, 
+                        useCORS: true, 
+                        backgroundColor: '#ffffff',
+                        letterRendering: true,
+                        scrollY: 0,
+                        scrollX: 0,
+                        width: 820, // Оптимально для планшетного вида без обрезки
+                        onclone: (clonedDoc) => {
+                            const note = clonedDoc.getElementById('note-details');
+                            if (note) {
+                                note.style.width = '750px';
+                                note.style.margin = '0 auto';
+                                note.style.padding = '40px';
+                            }
+                            // Скрываем кнопки
+                            const actions = clonedDoc.querySelector('.view-actions-side');
+                            if (actions) actions.style.display = 'none';
+                        }
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(element).save();
+            } catch (err) {
+                console.error('PDF error:', err);
+            } finally {
+                document.body.classList.remove('pdf-export-mode');
+                if (btn) btn.disabled = false;
             }
         }
 
-        function switchTab(tabId) {
+        window.switchTab = (tabId) => {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
             const target = document.getElementById(`tab-${tabId}`);
             if (target) target.classList.remove('hidden');
@@ -445,7 +613,7 @@
             if (tabId === 'tags') renderTags();
         }
 
-        function previewImage(input) {
+        window.previewImage = (input) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -456,7 +624,7 @@
             }
         }
 
-        function openAddForm(bookId = null) {
+        window.openAddForm = (bookId = null) => {
             currentEditingId = bookId;
             switchTab('add');
             populateYears();
@@ -468,9 +636,9 @@
             selectedCoverBase64 = null;
             document.getElementById('cover-preview-container').innerHTML = `<span>Загрузить<br>обложку</span>`;
 
-            const book = bookId ? mockBooks.find(b => b.id === bookId) : null;
+            const book = bookId ? books.find(b => b.id === bookId) : null;
             document.getElementById('q-cloud').innerHTML = questionsPool.map(q => {
-                const sel = book && book.answers[q];
+                const sel = book && book.answers && book.answers[q];
                 return `<div class="q-chip ${sel ? 'selected' : ''}" onclick="toggleQuestion(this, '${q}')">${q}</div>`;
             }).join('');
 
@@ -483,18 +651,20 @@
                 document.getElementById('f-title').value = book.title;
                 document.getElementById('f-author').value = book.author;
                 document.getElementById('f-genre').value = book.genre || '';
-                document.getElementById('f-tags').value = book.tags.join(', ');
+                document.getElementById('f-tags').value = (book.tags || []).join(', ');
                 document.getElementById('f-month').value = book.month;
                 document.getElementById('f-year').value = book.year;
                 if(book.img) {
                     selectedCoverBase64 = book.img;
                     document.getElementById('cover-preview-container').innerHTML = `<img src="${book.img}">`;
                 }
-                Object.keys(book.answers).forEach(q => addQuestionToContainer(q, book.answers[q], !questionsPool.includes(q)));
+                if(book.answers) {
+                    Object.keys(book.answers).forEach(q => addQuestionToContainer(q, book.answers[q], !questionsPool.includes(q)));
+                }
             }
         }
 
-        function toggleQuestion(el, q) {
+        window.toggleQuestion = (el, q) => {
             el.classList.toggle('selected');
             const id = 'q-field-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
             if (el.classList.contains('selected')) addQuestionToContainer(q, '');
@@ -513,81 +683,22 @@
             container.appendChild(item);
         }
 
-        function updateRatingVal(id, val) { document.getElementById(`rv-${id}`).innerText = val; }
+        window.updateRatingVal = (id, val) => { document.getElementById(`rv-${id}`).innerText = val; }
 
-        function saveBook() {
-            const sliders = document.querySelectorAll('.rating-slider');
-            const criteria = Array.from(sliders).map(s => parseInt(s.value));
-            const avgRating = (criteria.reduce((a, b) => a + b, 0) / 10).toFixed(1);
-            const answers = {};
-            document.querySelectorAll('.q-item').forEach(item => {
-                const label = item.querySelector('label')?.innerText || item.querySelector('.custom-q-input')?.value;
-                const text = item.querySelector('textarea').value;
-                if(label && label.trim()) answers[label] = text;
-            });
+        window.addCustomQuestion = () => { addQuestionToContainer('', '', true); tg.HapticFeedback.impactOccurred('light'); }
 
-            const bookData = {
-                id: currentEditingId || Date.now(),
-                title: document.getElementById('f-title').value || 'Без названия',
-                author: document.getElementById('f-author').value || 'Неизвестен',
-                genre: document.getElementById('f-genre').value,
-                month: document.getElementById('f-month').value,
-                year: document.getElementById('f-year').value,
-                rating: avgRating,
-                img: selectedCoverBase64 || 'image_2.png',
-                tags: document.getElementById('f-tags').value.split(',').map(t => t.trim().startsWith('#') ? t.trim() : '#' + t.trim()).filter(t => t !== '#'),
-                answers, criteria
-            };
-
-            if (currentEditingId) {
-                const idx = mockBooks.findIndex(b => b.id === currentEditingId);
-                if (idx !== -1) mockBooks[idx] = bookData;
-            } else mockBooks.unshift(bookData);
-            
-            tg.HapticFeedback.notificationOccurred('success');
-            switchTab('all');
-        }
-
-        function deleteBook(id) {
-            tg.showPopup({
-                title: 'Удаление',
-                message: 'Вы действительно хотите удалить этот конспект?',
-                buttons: [
-                    {id: 'delete', type: 'destructive', text: 'Удалить'},
-                    {id: 'cancel', type: 'cancel', text: 'Отмена'}
-                ]
-            }, (buttonId) => {
-                if (buttonId === 'delete') {
-                    mockBooks = mockBooks.filter(b => b.id !== id);
-                    tg.HapticFeedback.notificationOccurred('success');
-                    switchTab('all');
-                }
-            });
-        }
-
-        async function exportPDF(bookTitle) {
-            const element = document.getElementById('note-details');
-            document.body.classList.add('pdf-export-mode');
-            const opt = {
-                margin: 10, filename: `Reading_Journal_${bookTitle}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 820 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            await html2pdf().set(opt).from(element).save();
-            document.body.classList.remove('pdf-export-mode');
-        }
-
-        function viewBook(id) {
-            const book = mockBooks.find(b => b.id === id);
+        window.viewBook = (id) => {
+            const book = books.find(b => b.id === id);
             if (!book) return;
             const container = document.getElementById('note-details');
             const rClass = getRatingClass(book.rating);
             
             let qaHtml = '';
-            Object.entries(book.answers).forEach(([q, a]) => {
-                if(a && a.trim()) qaHtml += `<div class="note-qa-item"><span class="q">${q}</span><div class="a">${a}</div></div>`;
-            });
+            if (book.answers) {
+                Object.entries(book.answers).forEach(([q, a]) => {
+                    if(a && a.trim()) qaHtml += `<div class="note-qa-item"><span class="q">${q}</span><div class="a">${a}</div></div>`;
+                });
+            }
 
             let ratingsHtml = `<div class="view-detailed-ratings"><div class="group-title">Рейтинг книги</div>`;
             ratingCriteria.forEach((name, i) => {
@@ -615,9 +726,9 @@
                         </div>
                     </div>
                     <div class="view-actions-side">
-                        <button class="btn-base btn-mini-action fill" onclick="openAddForm(${book.id})">${iconEdit}<span>Редактировать</span></button>
-                        <button class="btn-base btn-mini-action" onclick="exportPDF('${book.title.replace(/\s/g, '_')}')">${iconPdf}<span>PDF</span></button>
-                        <button class="btn-base btn-mini-action" onclick="deleteBook(${book.id})">${iconTrash}<span>Удалить</span></button>
+                        <button class="btn-base btn-mini-action fill" onclick="openAddForm('${book.id}')">${iconEdit}<span>Редактировать</span></button>
+                        <button class="btn-base btn-mini-action" onclick="exportPDF('${book.title.replace(/[^a-z0-9]/gi, '_')}')">${iconPdf}<span>PDF</span></button>
+                        <button class="btn-base btn-mini-action" onclick="deleteBook('${book.id}')">${iconTrash}<span>Удалить</span></button>
                     </div>
                 </div>
                 <div class="note-qa">${qaHtml || '<p style="color:var(--tg-hint); font-size: 14px; text-align: center;">Конспект пуст...</p>'}</div>
@@ -636,42 +747,43 @@
         function renderAll() {
             const shelf = document.getElementById('shelf-all');
             shelf.innerHTML = '<div class="book-card" onclick="openAddForm()"><div class="book-cover add-card"><span>+</span></div></div>';
-            mockBooks.forEach(b => shelf.appendChild(createShelfBook(b)));
+            books.forEach(b => shelf.appendChild(createShelfBook(b)));
         }
 
         function renderMonths() {
             const shelf = document.getElementById('shelf-months'); shelf.innerHTML = '';
-            const groups = [...new Set(mockBooks.map(b => `${b.month} ${b.year}`))];
+            const groups = [...new Set(books.map(b => `${b.month} ${b.year}`))];
             groups.forEach(g => {
                 const [m, y] = g.split(' ');
                 const cont = document.createElement('div');
                 cont.innerHTML = `<div class="group-title">${m} <span class="year-label">${y}</span></div>`;
                 const grid = document.createElement('div'); grid.className = 'book-shelf';
-                mockBooks.filter(b => b.month === m && b.year === y).forEach(b => grid.appendChild(createShelfBook(b)));
+                books.filter(b => b.month === m && b.year === y).forEach(b => grid.appendChild(createShelfBook(b)));
                 cont.appendChild(grid); shelf.appendChild(cont);
             });
         }
         
         function renderAuthors() {
             const shelf = document.getElementById('shelf-authors'); shelf.innerHTML = '';
-            const authors = [...new Set(mockBooks.map(b => b.author))];
+            const authors = [...new Set(books.map(b => b.author))];
             authors.forEach(a => {
                 const cont = document.createElement('div');
                 cont.innerHTML = `<div class="group-title">${a}</div>`;
                 const grid = document.createElement('div'); grid.className = 'book-shelf';
-                mockBooks.filter(b => b.author === a).forEach(b => grid.appendChild(createShelfBook(b)));
+                books.filter(b => b.author === a).forEach(b => grid.appendChild(createShelfBook(b)));
                 cont.appendChild(grid); shelf.appendChild(cont);
             });
         }
 
         function renderTags() {
             const shelf = document.getElementById('shelf-tags'); shelf.innerHTML = '';
-            const tags = [...new Set(mockBooks.flatMap(b => b.tags))];
+            const tags = [...new Set(books.flatMap(b => b.tags || []))];
             tags.forEach(t => {
+                if(!t) return;
                 const cont = document.createElement('div');
                 cont.innerHTML = `<div class="group-title">${t}</div>`;
                 const grid = document.createElement('div'); grid.className = 'book-shelf';
-                mockBooks.filter(b => b.tags.includes(t)).forEach(b => grid.appendChild(createShelfBook(b)));
+                books.filter(b => (b.tags || []).includes(t)).forEach(b => grid.appendChild(createShelfBook(b)));
                 cont.appendChild(grid); shelf.appendChild(cont);
             });
         }
@@ -684,9 +796,21 @@
             return div;
         }
 
-        function addCustomQuestion() { addQuestionToContainer('', '', true); tg.HapticFeedback.impactOccurred('light'); }
+        function populateYears() {
+            const yearSelect = document.getElementById('f-year');
+            if(!yearSelect) return;
+            yearSelect.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear + 5; y >= 1950; y--) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                if (y === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+        }
 
-        window.onload = renderAll;
+        initAuth();
+        populateYears();
     </script>
 </body>
 </html>
