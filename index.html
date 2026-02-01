@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Reading Journal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Библиотека для генерации PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            /* Фиксированный темный фон приложения */
             --tg-bg: #1A1A1C;
             --tg-sec-bg: #2c2c2e;
             --tg-text: #ffffff;
             --tg-hint: #8e8e93;
             --tg-accent: #85BC41; 
-            
-            /* Цвета шильдиков с 60% прозрачности */
             --rating-red: rgba(208, 47, 47, 0.6);
             --rating-blue: rgba(46, 78, 220, 0.6);
             --rating-green: rgba(133, 188, 65, 0.6);
@@ -33,9 +29,9 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Навигация */
         .top-nav {
             position: sticky;
             top: 0;
@@ -70,11 +66,10 @@
         }
 
         #app { flex: 1; padding: 16px; }
-        .section { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .section { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .hidden { display: none !important; }
 
-        /* Адаптивная полка */
         .book-shelf { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -83,16 +78,11 @@
             margin: 0 auto; 
         }
 
-        @media (min-width: 600px) { 
-            .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 25px; } 
-        }
-
-        @media (min-width: 1024px) { 
-            .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 25px; } 
-        }
+        @media (min-width: 600px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 25px; } }
+        @media (min-width: 1024px) { .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 25px; } }
 
         .book-card { position: relative; cursor: pointer; transition: 0.2s; }
-        .book-card:active { transform: scale(0.98); }
+        .book-card:active { transform: scale(0.96); }
         .book-cover { 
             width: 100%; 
             aspect-ratio: 2/3; 
@@ -102,24 +92,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
             position: relative; 
         }
-        .book-cover img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            image-rendering: high-quality;
-        }
+        .book-cover img { width: 100%; height: 100%; object-fit: cover; image-rendering: high-quality; }
         .book-date-badge { position: absolute; bottom: 8px; left: 8px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; color: #fff; backdrop-filter: blur(4px); }
         
         .rating-badge { 
-            position: absolute; 
-            top: 8px; 
-            right: 8px; 
-            font-size: 11px; 
-            font-weight: 700; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            color: #fff; 
-            z-index: 2; 
+            position: absolute; top: 8px; right: 8px; font-size: 11px; 
+            font-weight: 700; padding: 2px 6px; border-radius: 4px; color: #fff; z-index: 2; 
         }
         .rating-red { background-color: var(--rating-red); }
         .rating-blue { background-color: var(--rating-blue); }
@@ -134,71 +112,21 @@
         /* Форма */
         .add-form { display: flex; flex-direction: column; gap: 24px; padding-bottom: 50px; }
         .form-header { display: grid; grid-template-columns: 120px 1fr; gap: 20px; }
-        
         .cover-upload { 
-            width: 120px; 
-            aspect-ratio: 2/3; 
-            border-radius: 8px; 
-            border: 2px dashed var(--tg-hint); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            text-align: center; 
-            padding: 10px; 
-            font-size: 11px; 
-            color: var(--tg-hint); 
-            cursor: pointer; 
-            line-height: 1.3;
+            width: 120px; aspect-ratio: 2/3; border-radius: 8px; border: 2px dashed var(--tg-hint); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 10px; font-size: 11px; color: var(--tg-hint); cursor: pointer; line-height: 1.3;
         }
         .cover-upload img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
         .form-inputs { display: flex; flex-direction: column; gap: 12px; }
-        .form-inputs input { 
-            background: var(--tg-sec-bg); 
-            border: none; 
-            border-radius: 8px; 
-            padding: 10px 12px; 
-            color: var(--tg-text); 
-            font-size: 14px; 
-            outline: none;
-        }
+        .form-inputs input { background: var(--tg-sec-bg); border: none; border-radius: 8px; padding: 10px 12px; color: var(--tg-text); font-size: 14px; outline: none; }
         .form-inputs input::placeholder { color: var(--tg-hint); font-style: italic; font-size: 13px; }
-        
         .form-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        .custom-select-wrapper {
-            position: relative;
-            background: var(--tg-sec-bg);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .custom-select-wrapper select {
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 10px 30px 10px 12px;
-            color: var(--tg-text);
-            font-size: 14px;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            cursor: pointer;
-            box-shadow: none;
-        }
-        
-        .select-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            width: 12px;
-            height: 12px;
-            color: var(--tg-hint);
-            opacity: 0.6;
-        }
+        .custom-select-wrapper { position: relative; background: var(--tg-sec-bg); border-radius: 8px; overflow: hidden; }
+        .custom-select-wrapper select { width: 100%; background: transparent; border: none; padding: 10px 30px 10px 12px; color: var(--tg-text); font-size: 14px; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; box-shadow: none; }
+        .select-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; width: 12px; height: 12px; color: var(--tg-hint); opacity: 0.6; }
 
         .questions-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
         .q-chip { padding: 6px 12px; background: var(--tg-sec-bg); border-radius: 14px; font-size: 13px; cursor: pointer; transition: 0.2s; }
@@ -215,35 +143,12 @@
         .rating-slider { width: 100%; -webkit-appearance: none; height: 4px; background: var(--tg-sec-bg); border-radius: 2px; }
         .rating-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--tg-accent); border-radius: 50%; cursor: pointer; }
 
-        /* Унифицированный стиль всех кнопок */
         .btn-base {
-            padding: 10px 6px; 
-            border-radius: 8px; 
-            font-size: 11px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            text-align: center;
-            border: 1px solid var(--tg-accent);
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            padding: 10px 6px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center;
+            border: 1px solid var(--tg-accent); text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;
         }
-
-        .save-btn { 
-            background: var(--tg-accent); 
-            color: #fff;
-            width: 100%;
-            margin-top: 20px;
-        }
-        
-        .btn-mini-action { 
-            background: transparent;
-            color: var(--tg-accent);
-            min-height: 38px;
-        }
+        .save-btn { background: var(--tg-accent); color: #fff; width: 100%; margin-top: 20px; }
+        .btn-mini-action { background: transparent; color: var(--tg-accent); min-height: 38px; }
         .btn-mini-action.fill { background: var(--tg-accent); color: #fff; }
         .btn-mini-action svg { width: 16px; height: 16px; fill: currentColor; }
 
@@ -255,7 +160,6 @@
         .view-info-text { flex: 1; }
         .view-info-text h1 { font-size: 18px; margin: 0 0 8px 0; font-weight: 700; }
         .view-info-text h2 { font-size: 15px; color: var(--tg-hint); margin: 0 0 6px 0; font-weight: 600; } 
-        
         .view-actions-side { display: flex; flex-direction: column; gap: 10px; width: 140px; flex-shrink: 0; }
 
         .note-qa { margin-top: 10px; }
@@ -265,33 +169,28 @@
 
         .view-detailed-ratings { margin-top: 30px; border-top: 0.5px solid rgba(255,255,255,0.1); padding-top: 20px; }
         .view-rating-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
-        .view-rating-item span:first-child { color: var(--tg-hint); }
 
-        /* Мобильная версия */
         @media (max-width: 600px) {
             .view-header-flex { flex-direction: column; align-items: center; text-align: center; }
             .view-book-side { flex-direction: column; align-items: center; }
-            .view-actions-side { 
-                flex-direction: row; 
-                width: 100%; 
-                justify-content: center; 
-                margin-top: 20px; 
-                border-bottom: none; 
-            }
+            .view-actions-side { flex-direction: row; width: 100%; justify-content: center; margin-top: 20px; border-bottom: none; }
             .view-actions-side .btn-mini-action { width: 48px; height: 48px; border-radius: 50%; }
             .view-actions-side .btn-mini-action span { display: none; }
             .view-actions-side .btn-mini-action svg { width: 22px; height: 22px; }
             #add-custom-q-btn { width: 100%; border-radius: 8px; margin-bottom: 10px; }
         }
 
-        /* --- PDF EXPORT STYLES (TABLET LOOK, CENTERED) --- */
-        /* Стили применяются только внутри onclone хука html2pdf */
         .pdf-export-mode { background-color: #ffffff !important; color: #000000 !important; }
+        .pdf-export-mode #note-details { width: 750px !important; margin: 0 auto !important; padding: 40px !important; background-color: #ffffff !important; overflow: visible !important; }
+        .pdf-export-mode .view-header-flex { flex-direction: row !important; text-align: left !important; border-bottom-color: #eeeeee !important; }
+        .pdf-export-mode .view-book-side { flex-direction: row !important; gap: 25px !important; }
+        .pdf-export-mode .rating-badge { color: #000000 !important; border: 1px solid rgba(0,0,0,0.2) !important; position: absolute !important; top: 5px !important; right: 5px !important; }
+        .pdf-export-mode .view-actions-side { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
+    <div class="top-nav" id="main-nav">
         <div class="nav-items-wrapper" id="nav-tabs">
             <div class="nav-item active" data-tab="all" onclick="switchTab('all')">Все</div>
             <div class="nav-item" data-tab="months" onclick="switchTab('months')">Месяцы</div>
@@ -315,6 +214,7 @@
             <div id="shelf-tags"></div>
         </div>
 
+        <!-- Форма -->
         <div id="tab-add" class="section hidden">
             <div class="add-form">
                 <div class="form-header">
@@ -327,7 +227,6 @@
                         <input type="text" id="f-author" placeholder="Автор">
                         <input type="text" id="f-genre" placeholder="Жанр">
                         <input type="text" id="f-tags" placeholder="Хэштеги (через запятую)">
-                        
                         <div class="form-date-row">
                             <div class="custom-select-wrapper">
                                 <select id="f-month">
@@ -369,26 +268,9 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Глобальный перехват ошибок
-        window.addEventListener('unhandledrejection', function(event) {
-            console.warn('Caught rejection:', event.reason);
-            event.preventDefault();
-        });
-
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'reading-journal-final';
-
-        let currentEditingId = null;
-        let selectedCoverBase64 = null;
-        let books = [];
-        let user = null;
-
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        // Глобальные переменные
+        let db, auth, user, currentEditingId = null, selectedCoverBase64 = null, books = [];
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'reading-journal-v2';
 
         const questionsPool = [
             "кто главные персонажи и какую роль они играют?", "какие отношения или конфликты лежат в основе истории?", "о чём эта книга в целом?", 
@@ -411,167 +293,23 @@
         const iconPdf = '<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><g><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></g></svg>';
         const iconTrash = '<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>';
 
-        // Auth
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
-
-        onAuthStateChanged(auth, (u) => {
-            user = u;
-            if (user) loadBooks();
-        });
-
-        // Load / Save
-        function loadBooks() {
-            if (!user) return;
-            const booksCol = collection(db, 'artifacts', appId, 'users', user.uid, 'books');
-            onSnapshot(booksCol, (snapshot) => {
-                books = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Перерисовываем текущую активную вкладку
-                const activeTab = document.querySelector('.nav-item.active')?.dataset.tab || 'all';
-                if (activeTab === 'all') renderAll();
-                else if (activeTab === 'months') renderMonths();
-                else if (activeTab === 'authors') renderAuthors();
-                else if (activeTab === 'tags') renderTags();
-            }, (err) => console.error("Snapshot error:", err));
-        }
-
-        window.saveBook = async () => {
-            if (!user) return;
-            const sliders = document.querySelectorAll('.rating-slider');
-            const criteria = Array.from(sliders).map(s => parseInt(s.value));
-            const avgRating = (criteria.reduce((a, b) => a + b, 0) / 10).toFixed(1);
-            const answers = {};
-            document.querySelectorAll('.q-item').forEach(item => {
-                const label = item.querySelector('label')?.innerText || item.querySelector('.custom-q-input')?.value;
-                const text = item.querySelector('textarea').value;
-                if(label && label.trim()) answers[label] = text;
-            });
-
-            const id = currentEditingId || Date.now().toString();
-            const bookData = {
-                title: document.getElementById('f-title').value || 'Без названия',
-                author: document.getElementById('f-author').value || 'Неизвестен',
-                genre: document.getElementById('f-genre').value || '',
-                month: document.getElementById('f-month').value,
-                year: document.getElementById('f-year').value,
-                rating: avgRating,
-                img: selectedCoverBase64 || 'image_2.png',
-                tags: document.getElementById('f-tags').value.split(',').map(t => t.trim().startsWith('#') ? t.trim() : '#' + t.trim()).filter(t => t !== '#'),
-                answers, criteria
-            };
-
-            await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'books', id), bookData);
-            tg.HapticFeedback.notificationOccurred('success');
-            switchTab('all');
-        }
-
-        window.deleteBook = (id) => {
-            if (!user) return;
-            tg.showPopup({
-                title: 'Удаление',
-                message: 'Вы действительно хотите удалить этот конспект?',
-                buttons: [
-                    {id: 'delete', type: 'destructive', text: 'Удалить'},
-                    {id: 'cancel', type: 'cancel', text: 'Отмена'}
-                ]
-            }, async (buttonId) => {
-                if (buttonId === 'delete') {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'books', id));
-                    tg.HapticFeedback.notificationOccurred('success');
-                    switchTab('all');
-                }
-            });
-        }
-
-        // PDF Export
-        window.exportPDF = async (bookTitle) => {
-            const element = document.getElementById('note-details');
-            if (!element) return;
-            
-            const btn = document.querySelector('.btn-base.fill:nth-child(2)') || document.querySelector('.btn-mini-action:nth-child(2)');
-            if (btn) btn.disabled = true;
-
-            try {
-                const opt = {
-                    margin: 10,
-                    filename: `Reading_Journal_${bookTitle}.pdf`,
-                    image: { type: 'jpeg', quality: 1.0 },
-                    html2canvas: { 
-                        scale: 3, 
-                        useCORS: true, 
-                        backgroundColor: '#ffffff',
-                        letterRendering: true,
-                        width: 800,
-                        onclone: (clonedDoc) => {
-                            const note = clonedDoc.getElementById('note-details');
-                            if (note) {
-                                clonedDoc.body.classList.add('pdf-export-mode');
-                                note.style.width = '750px';
-                                note.style.margin = '0 auto';
-                                note.style.padding = '40px';
-                                note.style.backgroundColor = '#ffffff';
-                                note.style.color = '#000000';
-
-                                // Принудительный горизонтальный макет
-                                const header = note.querySelector('.view-header-flex');
-                                if (header) {
-                                    header.style.display = 'flex';
-                                    header.style.flexDirection = 'row';
-                                    header.style.alignItems = 'flex-start';
-                                    header.style.textAlign = 'left';
-                                    header.style.gap = '25px';
-                                    header.style.borderBottom = '1px solid #eeeeee';
-                                }
-                                
-                                const side = note.querySelector('.view-book-side');
-                                if(side) {
-                                    side.style.display = 'flex';
-                                    side.style.flexDirection = 'row';
-                                    side.style.gap = '25px';
-                                }
-
-                                note.querySelectorAll('h1, h2, .a').forEach(el => el.style.color = '#000000');
-                                note.querySelectorAll('.q').forEach(el => el.style.color = '#555555');
-                                note.querySelectorAll('.rating-badge').forEach(el => {
-                                    el.style.color = '#000000';
-                                    el.style.border = '1px solid rgba(0,0,0,0.2)';
-                                    el.style.position = 'absolute';
-                                });
-
-                                const acts = note.querySelector('.view-actions-side');
-                                if (acts) acts.style.display = 'none';
-                            }
-                        }
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                await html2pdf().set(opt).from(element).save();
-            } catch (err) { console.error('PDF error:', err); } 
-            finally { if (btn) btn.disabled = false; }
-        }
-
-        // Tabs & Navigation
+        // Привязка функций к window
         window.switchTab = (tabId) => {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
             const target = document.getElementById(`tab-${tabId}`);
             if (target) target.classList.remove('hidden');
-            const nav = document.getElementById('nav-tabs');
+            
+            const nav = document.getElementById('main-nav');
             const addBtn = document.getElementById('top-add-btn');
             
             if (tabId === 'add' || tabId === 'view') {
                 nav.classList.add('hidden');
                 addBtn.innerText = "Назад";
-                addBtn.onclick = () => switchTab('all');
+                addBtn.onclick = () => window.switchTab('all');
             } else {
                 nav.classList.remove('hidden');
                 addBtn.innerText = "+ Добавить книгу";
-                addBtn.onclick = openAddForm;
+                addBtn.onclick = () => window.openAddForm();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.tab === tabId));
             }
 
@@ -579,7 +317,7 @@
             else if (tabId === 'months') renderMonths();
             else if (tabId === 'authors') renderAuthors();
             else if (tabId === 'tags') renderTags();
-        }
+        };
 
         window.previewImage = (input) => {
             if (input.files && input.files[0]) {
@@ -590,11 +328,11 @@
                 }
                 reader.readAsDataURL(input.files[0]);
             }
-        }
+        };
 
         window.openAddForm = (bookId = null) => {
             currentEditingId = bookId;
-            switchTab('add');
+            window.switchTab('add');
             populateYears();
             document.getElementById('f-title').value = '';
             document.getElementById('f-author').value = '';
@@ -630,18 +368,19 @@
                     Object.keys(book.answers).forEach(q => addQuestionToContainer(q, book.answers[q], !questionsPool.includes(q)));
                 }
             }
-        }
+        };
 
         window.toggleQuestion = (el, q) => {
             el.classList.toggle('selected');
             const id = 'q-field-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
             if (el.classList.contains('selected')) addQuestionToContainer(q, '');
-            else document.getElementById(id)?.remove();
-        }
+            else { const t = document.getElementById(id); if (t) t.remove(); }
+        };
 
         function addQuestionToContainer(q, val, isCustom = false) {
             const container = document.getElementById('selected-questions');
             const id = 'q-field-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
+            if (document.getElementById(id)) return;
             const item = document.createElement('div');
             item.className = 'q-item';
             item.id = id;
@@ -651,9 +390,68 @@
             container.appendChild(item);
         }
 
-        window.updateRatingVal = (id, val) => { document.getElementById(`rv-${id}`).innerText = val; }
+        window.updateRatingVal = (id, val) => { document.getElementById(`rv-${id}`).innerText = val; };
+        window.addCustomQuestion = () => { addQuestionToContainer('', '', true); tg.HapticFeedback.impactOccurred('light'); };
 
-        window.addCustomQuestion = () => { addQuestionToContainer('', '', true); tg.HapticFeedback.impactOccurred('light'); }
+        window.saveBook = async () => {
+            if (!user) return;
+            const sliders = document.querySelectorAll('.rating-slider');
+            const criteria = Array.from(sliders).map(s => parseInt(s.value));
+            const avgRating = (criteria.reduce((a, b) => a + b, 0) / 10).toFixed(1);
+            const answers = {};
+            document.querySelectorAll('.q-item').forEach(item => {
+                const label = item.querySelector('label')?.innerText || item.querySelector('.custom-q-input')?.value;
+                const text = item.querySelector('textarea').value;
+                if(label && label.trim()) answers[label] = text;
+            });
+
+            const id = currentEditingId || Date.now().toString();
+            const bookData = {
+                title: document.getElementById('f-title').value || 'Без названия',
+                author: document.getElementById('f-author').value || 'Неизвестен',
+                genre: document.getElementById('f-genre').value || '',
+                month: document.getElementById('f-month').value,
+                year: document.getElementById('f-year').value,
+                rating: avgRating,
+                img: selectedCoverBase64 || 'image_2.png',
+                tags: document.getElementById('f-tags').value.split(',').map(t => t.trim().startsWith('#') ? t.trim() : '#' + t.trim()).filter(t => t !== '#'),
+                answers, criteria
+            };
+
+            await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'books', id), bookData);
+            tg.HapticFeedback.notificationOccurred('success');
+            window.switchTab('all');
+        };
+
+        window.deleteBook = (id) => {
+            if (!user) return;
+            tg.showPopup({
+                title: 'Удаление', message: 'Вы действительно хотите удалить этот конспект?',
+                buttons: [{id: 'delete', type: 'destructive', text: 'Удалить'}, {id: 'cancel', type: 'cancel', text: 'Отмена'}]
+            }, async (btn) => {
+                if (btn === 'delete') {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'books', id));
+                    tg.HapticFeedback.notificationOccurred('success');
+                    window.switchTab('all');
+                }
+            });
+        };
+
+        window.exportPDF = async (bookTitle) => {
+            const element = document.getElementById('note-details');
+            try {
+                document.body.classList.add('pdf-export-mode');
+                const opt = {
+                    margin: 10, filename: `Reading_Journal_${bookTitle}.pdf`,
+                    image: { type: 'jpeg', quality: 1.0 },
+                    html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 800 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                await html2pdf().set(opt).from(element).save();
+            } finally {
+                document.body.classList.remove('pdf-export-mode');
+            }
+        };
 
         window.viewBook = (id) => {
             const book = books.find(b => b.id === id);
@@ -694,16 +492,16 @@
                         </div>
                     </div>
                     <div class="view-actions-side">
-                        <button class="btn-base btn-mini-action fill" onclick="openAddForm('${book.id}')">${iconEdit}<span>Редактировать</span></button>
-                        <button class="btn-base btn-mini-action" onclick="exportPDF('${book.title.replace(/[^a-z0-9]/gi, '_')}')">${iconPdf}<span>PDF</span></button>
-                        <button class="btn-base btn-mini-action" onclick="deleteBook('${book.id}')">${iconTrash}<span>Удалить</span></button>
+                        <button class="btn-base btn-mini-action fill" onclick="window.openAddForm('${book.id}')">${iconEdit}<span>Редактировать</span></button>
+                        <button class="btn-base btn-mini-action" onclick="window.exportPDF('${book.title.replace(/[^a-z0-9]/gi, '_')}')">${iconPdf}<span>PDF</span></button>
+                        <button class="btn-base btn-mini-action" onclick="window.deleteBook('${book.id}')">${iconTrash}<span>Удалить</span></button>
                     </div>
                 </div>
                 <div class="note-qa">${qaHtml || '<p style="color:var(--tg-hint); font-size: 14px; text-align: center;">Конспект пуст...</p>'}</div>
                 ${ratingsHtml}
             `;
-            switchTab('view');
-        }
+            window.switchTab('view');
+        };
 
         function getRatingClass(val) { 
             const n = parseFloat(val);
@@ -714,7 +512,7 @@
 
         function renderAll() {
             const shelf = document.getElementById('shelf-all');
-            shelf.innerHTML = '<div class="book-card" onclick="openAddForm()"><div class="book-cover add-card"><span>+</span></div></div>';
+            shelf.innerHTML = '<div class="book-card" onclick="window.openAddForm()"><div class="book-cover add-card"><span>+</span></div></div>';
             books.forEach(b => shelf.appendChild(createShelfBook(b)));
         }
 
@@ -759,7 +557,7 @@
         function createShelfBook(b) {
             const div = document.createElement('div');
             div.className = 'book-card';
-            div.onclick = () => viewBook(b.id);
+            div.onclick = () => window.viewBook(b.id);
             div.innerHTML = `<div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"><div class="book-date-badge">${b.month}</div></div>`;
             return div;
         }
@@ -777,8 +575,35 @@
             }
         }
 
-        initAuth();
-        populateYears();
+        // Firebase Init
+        const startApp = async () => {
+            const fbConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(fbConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+
+            onAuthStateChanged(auth, (u) => {
+                user = u;
+                if (user) {
+                    const booksCol = collection(db, 'artifacts', appId, 'users', user.uid, 'books');
+                    onSnapshot(booksCol, (snapshot) => {
+                        books = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderAll();
+                    });
+                }
+            });
+        };
+
+        window.onload = () => {
+            populateYears();
+            startApp().catch(err => console.error("Init Error:", err));
+        };
     </script>
 </body>
 </html>
