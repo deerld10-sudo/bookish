@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Reading Journal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Библиотека для генерации PDF -->
+    <!-- Library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -14,12 +14,17 @@
             --tg-text: #ffffff;
             --tg-hint: #8e8e93;
             --tg-accent: #85BC41; 
-            --rating-red: rgba(208, 47, 47, 0.6);
-            --rating-blue: rgba(46, 78, 220, 0.6);
-            --rating-green: rgba(133, 188, 65, 0.6);
+            --rating-red: rgba(208, 47, 47, 0.8);
+            --rating-blue: rgba(46, 78, 220, 0.8);
+            --rating-green: rgba(133, 188, 65, 0.8);
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none;
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -30,6 +35,7 @@
             min-height: 100vh; overflow-x: hidden;
         }
 
+        /* Navigation */
         .top-nav {
             position: sticky; top: 0;
             background-color: var(--tg-bg); z-index: 100;
@@ -37,140 +43,245 @@
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
         }
 
-        .nav-items-wrapper { display: flex; gap: 8px; flex: 1; overflow-x: auto; scrollbar-width: none; }
-        .nav-items-wrapper.hidden { display: none !important; }
+        .nav-items-wrapper { 
+            display: flex; gap: 8px; flex: 1; 
+            overflow-x: auto; scrollbar-width: none; 
+            padding-bottom: 2px;
+        }
         .nav-items-wrapper::-webkit-scrollbar { display: none; }
+        .nav-items-wrapper.hidden { display: none !important; }
 
         .nav-item {
-            padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+            padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
             white-space: nowrap; background-color: var(--tg-sec-bg); color: var(--tg-hint);
-            transition: 0.2s; cursor: pointer;
+            transition: all 0.2s ease; cursor: pointer;
         }
         .nav-item.active { background-color: var(--tg-text); color: var(--tg-bg); }
 
-        .btn-add-top { background: none; border: none; cursor: pointer; color: var(--tg-accent); font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .btn-add-top { 
+            background: none; border: none; cursor: pointer; 
+            color: var(--tg-accent); font-size: 14px; font-weight: 600; 
+            white-space: nowrap; padding: 4px 8px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            padding: 0 16px 12px 16px;
+            background: var(--tg-bg);
+        }
+        .search-input {
+            width: 100%;
+            background: var(--tg-sec-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--tg-text);
+            font-size: 14px;
+        }
 
         #app { flex: 1; padding: 16px; }
-        .section { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .section { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .hidden { display: none !important; }
 
+        /* Grid Shelf */
         .book-shelf { 
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; 
             max-width: 1400px; margin: 0 auto; 
         }
-        @media (min-width: 600px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 25px; } }
-        @media (min-width: 1024px) { .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 25px; } }
+        @media (min-width: 480px) { .book-shelf { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(4, 1fr); } }
 
-        .book-card { position: relative; cursor: pointer; transition: 0.2s; }
-        .book-card:active { transform: scale(0.96); }
+        .book-card { position: relative; cursor: pointer; transition: transform 0.2s ease; }
+        .book-card:active { transform: scale(0.95); }
         .book-cover { 
             width: 100%; aspect-ratio: 2/3; background-color: var(--tg-sec-bg); 
-            border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4); position: relative; 
+            border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); 
+            position: relative; border: 0.5px solid rgba(255,255,255,0.05);
+            z-index: 1;
         }
-        .book-cover img { width: 100%; height: 100%; object-fit: cover; image-rendering: high-quality; }
-        .book-date-badge { position: absolute; bottom: 8px; left: 8px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; color: #fff; backdrop-filter: blur(4px); }
+        .book-cover img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .book-date-badge { 
+            position: absolute; bottom: 8px; left: 8px; font-size: 10px; 
+            background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 6px; 
+            color: #fff; backdrop-filter: blur(4px); font-weight: 500;
+        }
         
         .rating-badge { 
-            position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 700; 
-            padding: 2px 6px; border-radius: 4px; color: #ffffff; z-index: 2; 
+            position: absolute; top: -8px; right: -8px; font-size: 11px; font-weight: 800; 
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; color: #ffffff; z-index: 10; border: 2px solid var(--tg-bg);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         .rating-red { background-color: var(--rating-red); }
         .rating-blue { background-color: var(--rating-blue); }
         .rating-green { background-color: var(--rating-green); }
 
-        .add-card { border: 2px dashed var(--tg-hint); background: transparent !important; display: flex; align-items: center; justify-content: center; }
-        .add-card span { font-size: 40px; color: var(--tg-hint); }
-        .group-title { font-size: 18px; font-weight: 700; margin: 16px 0; display: flex; align-items: baseline; gap: 10px; }
+        .group-title { 
+            font-size: 18px; font-weight: 700; margin: 24px 0 12px 0; 
+            display: flex; align-items: baseline; gap: 8px; 
+            border-left: 3px solid var(--tg-accent); padding-left: 12px;
+        }
 
-        /* Форма создания */
-        .add-form { display: flex; flex-direction: column; gap: 24px; padding-bottom: 50px; }
-        .form-header { display: grid; grid-template-columns: 120px 1fr; gap: 20px; }
+        /* Rating Tab List Styles */
+        .rating-list-container { display: flex; flex-direction: column; gap: 12px; }
+        .rating-list-item { 
+            display: flex; gap: 16px; background: var(--tg-sec-bg); 
+            padding: 12px; border-radius: 16px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .rating-list-item:active { background: rgba(255,255,255,0.05); }
+        .rating-list-img { width: 70px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .rating-list-content { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+        .rl-title { font-weight: 700; font-size: 15px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rl-author { font-size: 13px; color: var(--tg-hint); margin-bottom: 4px; }
+        .rl-meta { font-size: 11px; color: var(--tg-hint); font-style: italic; margin-bottom: 6px; }
+        .rl-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+        .rl-tag { font-size: 9px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: var(--tg-hint); }
+        .rl-score-box { 
+            display: flex; align-items: center; justify-content: center; 
+            width: 36px; height: 36px; border-radius: 50%; color: #fff; font-weight: 800; font-size: 12px;
+            flex-shrink: 0; margin-left: 8px; align-self: center;
+        }
+
+        /* Form Styles */
+        .add-form { display: flex; flex-direction: column; gap: 24px; padding-bottom: 100px; max-width: 600px; margin: 0 auto; }
+        .form-header { display: flex; gap: 20px; }
         .cover-upload { 
-            width: 120px; aspect-ratio: 2/3; border-radius: 8px; border: 2px dashed var(--tg-hint); 
+            width: 110px; flex-shrink: 0; aspect-ratio: 2/3; border-radius: 10px; 
+            border: 2px dashed var(--tg-hint); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            text-align: center; padding: 10px; font-size: 11px; color: var(--tg-hint); cursor: pointer; line-height: 1.3;
+            text-align: center; padding: 10px; font-size: 11px; color: var(--tg-hint); 
+            cursor: pointer; background: rgba(255,255,255,0.03);
         }
-        .cover-upload img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-        .form-inputs { display: flex; flex-direction: column; gap: 12px; }
-        .form-inputs input { background: var(--tg-sec-bg); border: none; border-radius: 8px; padding: 10px 12px; color: var(--tg-text); font-size: 14px; outline: none; }
-        .form-inputs input::placeholder { color: var(--tg-hint); font-style: italic; font-size: 13px; }
+        .cover-upload img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        
+        .form-inputs { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .form-inputs input { 
+            background: var(--tg-sec-bg); border: none; border-radius: 10px; 
+            padding: 12px; color: var(--tg-text); font-size: 14px; 
+        }
+        .form-inputs input::placeholder { color: var(--tg-hint); }
+        
         .form-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .custom-select-wrapper { position: relative; background: var(--tg-sec-bg); border-radius: 8px; overflow: hidden; }
-        .custom-select-wrapper select { width: 100%; background: transparent; border: none; padding: 10px 30px 10px 12px; color: var(--tg-text); font-size: 14px; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; }
-        .select-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; width: 12px; height: 12px; color: var(--tg-hint); opacity: 0.6; }
-
-        /* Облако и вопросы */
-        .questions-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-        .q-chip { padding: 6px 12px; background: var(--tg-sec-bg); border-radius: 14px; font-size: 13px; cursor: pointer; margin: 4px; display: inline-block; transition: 0.2s; }
-        .q-chip.selected { background: var(--tg-accent); color: #fff; }
-
-        .q-item { background: var(--tg-sec-bg); border-radius: 12px; padding: 12px; margin-bottom: 12px; position: relative; }
-        .q-item label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--tg-hint); font-style: italic; padding-right: 30px; }
-        .q-item .custom-q-label-input { 
-            background: transparent; border: none; color: var(--tg-hint); font-size: 13px; font-weight: 600; 
-            font-style: italic; margin-bottom: 8px; width: calc(100% - 30px); outline: none; border-bottom: none !important;
+        .custom-select-wrapper { position: relative; background: var(--tg-sec-bg); border-radius: 10px; }
+        .custom-select-wrapper select { 
+            width: 100%; background: transparent; border: none; padding: 12px; 
+            color: var(--tg-text); font-size: 14px; appearance: none;
         }
-        .q-item textarea { width: 100%; background: transparent; border: none; border-left: 2px solid var(--tg-accent); padding-left: 10px; color: var(--tg-text); font-size: 15px; resize: none; outline: none; min-height: 80px; }
-        .q-item .delete-q-btn { position: absolute; top: 12px; right: 12px; color: var(--tg-accent); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
-        .q-item .delete-q-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .select-icon { 
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+            pointer-events: none; width: 14px; height: 14px; opacity: 0.5;
+        }
 
-        /* Рейтинги */
-        .ratings-container { display: flex; flex-direction: column; gap: 24px; }
-        .rating-row { display: flex; flex-direction: column; gap: 10px; }
-        .rating-info { display: flex; justify-content: space-between; font-size: 14px; } 
-        .rating-slider { width: 100%; -webkit-appearance: none; height: 4px; background: var(--tg-sec-bg); border-radius: 2px; }
-        .rating-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--tg-accent); border-radius: 50%; cursor: pointer; }
+        /* Q&A Cloud */
+        .questions-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .q-chip { 
+            padding: 8px 14px; background: var(--tg-sec-bg); border-radius: 18px; 
+            font-size: 12px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+        }
+        .q-chip.selected { background: var(--tg-accent); color: #fff; font-weight: 500; }
 
-        /* Кнопки */
+        /* Q&A Item Form */
+        .q-item { 
+            background: var(--tg-sec-bg); border-radius: 14px; padding: 16px; 
+            margin-bottom: 16px; position: relative; 
+        }
+        .q-item .q-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .q-item label, .custom-q-label-input { 
+            display: block; font-size: 13px; font-weight: 700; 
+            color: var(--tg-hint); font-style: italic;
+        }
+        .custom-q-label-input { 
+            background: transparent; border: none; width: calc(100% - 30px); 
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;
+        }
+        .q-item textarea { 
+            width: 100%; background: transparent; border: none; 
+            border-left: 2px solid var(--tg-accent);
+            padding: 4px 0 4px 12px; color: var(--tg-text); 
+            font-size: 15px; resize: none; min-height: 80px; line-height: 1.5; font-weight: 700;
+        }
+        .delete-q-btn { 
+            color: var(--tg-accent); width: 20px; height: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .delete-q-btn svg { width: 100%; height: 100%; fill: currentColor; }
+
+        /* Ratings */
+        .rating-row { margin-bottom: 16px; }
+        .rating-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--tg-hint); }
+        .rating-slider { 
+            width: 100%; -webkit-appearance: none; height: 6px; 
+            background: var(--tg-sec-bg); border-radius: 3px; 
+        }
+        .rating-slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 22px; height: 22px; 
+            background: var(--tg-accent); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Buttons */
         .btn-base {
-            padding: 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center;
-            border: 1px solid var(--tg-accent); text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+            padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 700; 
+            cursor: pointer; text-align: center; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .save-btn { background: var(--tg-accent); color: #fff; width: 100%; margin-top: 20px; }
-        .btn-mini-action { background: transparent; color: var(--tg-accent); min-height: 44px; }
+        .save-btn { background: var(--tg-accent); color: #fff; width: 100%; margin-top: 20px; padding: 14px; }
+        
+        .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: 10px; width: 44px; height: 44px; padding: 0; }
         .btn-mini-action.fill { background: var(--tg-accent); color: #fff; }
         .btn-mini-action svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Просмотр конспекта */
-        .view-note { background: var(--tg-bg); line-height: 1.6; padding-bottom: 80px; }
-        .view-header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 30px; border-bottom: 0.5px solid rgba(255,255,255,0.1); padding-bottom: 25px; }
-        .view-book-side { display: flex; gap: 20px; flex: 1; align-items: flex-start; }
-        .view-cover-fixed { width: 165px; flex-shrink: 0; position: relative; } 
-        .view-info-text { flex: 1; }
-        .view-info-text h1 { font-size: 18px; margin: 0 0 8px 0; font-weight: 700; }
-        .view-info-text h2 { font-size: 15px; color: var(--tg-hint); margin: 0 0 6px 0; font-weight: 600; } 
+        /* View Note */
+        .view-note { max-width: 800px; margin: 0 auto; padding-bottom: 60px; }
+        .view-header-flex { 
+            display: flex; gap: 24px; margin-bottom: 24px; 
+            padding-bottom: 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); 
+        }
+        .view-cover-fixed { width: 140px; flex-shrink: 0; position: relative; }
+        .view-info-text h1 { font-size: 22px; margin: 0 0 8px 0; }
         
-        .view-actions-side { display: flex; flex-direction: column; gap: 10px; width: 140px; flex-shrink: 0; }
+        /* Заголовки в просмотре: Автор, Жанр, Месяц - 16px. Год - 12px. */
+        .view-info-text h2 { font-size: 16px; color: var(--tg-text); margin: 0 0 4px 0; font-weight: 500; }
+        .view-genre { color: var(--tg-hint) !important; font-style: italic !important; font-weight: 400 !important; font-size: 16px; margin-bottom: 4px; }
+        .view-month { font-size: 16px; color: var(--tg-hint); display: inline-block; }
+        .view-year { font-size: 12px; color: var(--tg-hint); font-style: italic; display: inline-block; margin-left: 4px; }
+        
+        .view-tag { font-size: 11px; background: var(--tg-sec-bg); padding: 4px 8px; border-radius: 6px; color: var(--tg-hint); }
 
+        .view-actions-side { display: flex; gap: 12px; margin-bottom: 32px; align-items: center; }
+
+        /* QA Display */
         .note-qa-item { margin-bottom: 24px; }
-        .note-qa-item .q { font-style: italic; color: var(--tg-hint); font-size: 13px; display: block; margin-bottom: 6px; }
-        .note-qa-item .a { font-size: 15px; white-space: pre-wrap; line-height: 1.5; }
+        .note-qa-item .q { 
+            font-size: 13px; color: var(--tg-hint); font-style: italic; 
+            display: block; margin-bottom: 6px; 
+        }
+        .note-qa-item .a { 
+            font-size: 16px; line-height: 1.5; white-space: pre-wrap; color: #fff; font-weight: 700;
+            border-left: 2px solid var(--tg-accent); padding-left: 12px;
+        }
 
-        .view-detailed-ratings { margin-top: 30px; border-top: 0.5px solid rgba(255,255,255,0.1); padding-top: 20px; }
-        .view-rating-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; }
+        .view-detailed-ratings { margin-top: 40px; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; }
+        .view-rating-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+        .view-rating-item:last-child { border-bottom: none; }
+        .rating-badge-score { font-weight: 700; color: var(--tg-accent); }
 
         @media (max-width: 600px) {
             .view-header-flex { flex-direction: column; align-items: center; text-align: center; }
-            .view-book-side { flex-direction: column; align-items: center; }
-            .view-actions-side { 
-                flex-direction: row; width: 100%; justify-content: center; 
-                margin: 30px 0; border-bottom: none; 
-            }
-            .btn-mini-action span { display: none; }
+            .view-actions-side { justify-content: center; }
         }
 
         /* PDF Styles */
-        .pdf-export-mode { background-color: #ffffff !important; color: #000000 !important; }
-        .pdf-export-mode #note-details { width: 750px !important; margin: 0 auto !important; padding: 40px !important; background-color: #ffffff !important; overflow: visible !important; }
-        .pdf-export-mode .view-header-flex { flex-direction: row !important; text-align: left !important; border-bottom-color: #eeeeee !important; }
-        .pdf-export-mode .view-book-side { flex-direction: row !important; gap: 25px !important; }
-        .pdf-export-mode .rating-badge { color: #ffffff !important; border: none !important; position: absolute !important; top: 5px !important; right: 5px !important; }
-        .pdf-export-mode .view-rating-item { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; margin-bottom: 10px !important; border-bottom: 0.5px solid #f5f5f5; padding-bottom: 4px; }
-        .pdf-export-mode .note-qa p { font-size: 14px !important; color: #666666 !important; }
-        .pdf-divider { display: none; border-bottom: 0.5px solid #eeeeee; margin: 25px 0; }
-        .pdf-export-mode .pdf-divider { display: block !important; }
-        .pdf-export-mode .view-actions-side { display: none !important; }
+        .pdf-export-mode { background: #fff !important; color: #000 !important; }
+        .pdf-export-mode #note-details { padding: 40px !important; color: #000 !important; }
+        .pdf-export-mode .note-qa-item { border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .pdf-export-mode .q { color: #888 !important; }
+        .pdf-export-mode .a { color: #000 !important; border-left-color: #5a8c20 !important; }
+        .pdf-export-mode .view-genre { color: #999 !important; }
+        .pdf-export-mode .view-tag { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -178,6 +289,7 @@
     <div class="top-nav" id="main-nav">
         <div class="nav-items-wrapper" id="nav-tabs">
             <div class="nav-item active" data-tab="all" onclick="window.switchTab('all')">Все</div>
+            <div class="nav-item" data-tab="rating" onclick="window.switchTab('rating')">Рейтинг</div>
             <div class="nav-item" data-tab="months" onclick="window.switchTab('months')">Месяцы</div>
             <div class="nav-item" data-tab="authors" onclick="window.switchTab('authors')">Авторы</div>
             <div class="nav-item" data-tab="tags" onclick="window.switchTab('tags')">Хэштеги</div>
@@ -185,9 +297,17 @@
         <button class="btn-add-top" id="btn-add-global" onclick="window.openAddForm()">+ Книга</button>
     </div>
 
+    <div class="search-container" id="search-bar-container">
+        <input type="text" class="search-input" id="shelf-search" placeholder="Поиск по названию или автору..." oninput="window.renderCurrentTab()">
+    </div>
+
     <div id="app">
+        <!-- Main Shelves -->
         <div id="tab-all" class="section">
             <div class="book-shelf" id="shelf-all"></div>
+        </div>
+        <div id="tab-rating" class="section hidden">
+            <div class="rating-list-container" id="shelf-rating"></div>
         </div>
         <div id="tab-months" class="section hidden">
             <div id="shelf-months"></div>
@@ -199,12 +319,13 @@
             <div id="shelf-tags"></div>
         </div>
 
+        <!-- Add/Edit Form -->
         <div id="tab-add" class="section hidden">
             <div class="add-form">
                 <div class="form-header">
                     <input type="file" id="cover-input" hidden accept="image/*" onchange="window.previewImage(this)">
                     <div class="cover-upload" onclick="document.getElementById('cover-input').click()" id="cover-preview-container">
-                        <span>Загрузить<br>обложку</span>
+                        <span>+<br>Обложка</span>
                     </div>
                     <div class="form-inputs">
                         <input type="text" id="f-title" placeholder="Название книги">
@@ -228,379 +349,330 @@
                         </div>
                     </div>
                 </div>
+                
                 <div>
-                    <div class="group-title">Облако вопросов</div>
+                    <div class="group-title">Заметки и мысли</div>
                     <div class="questions-cloud" id="q-cloud"></div>
                     <div id="selected-questions"></div>
-                    <button class="btn-base btn-mini-action" style="width:100%; border-radius:10px" onclick="window.addCustomQuestion()">+ Свой вопрос</button>
+                    <button class="btn-base btn-mini-action" style="width:100%; border-radius:12px; height:auto; padding:12px;" onclick="window.addCustomQuestion()">+ Свой вопрос</button>
                 </div>
+
                 <div>
-                    <div class="group-title">Рейтинг книги</div>
-                    <div class="ratings-container" id="ratings-list"></div>
+                    <div class="group-title">Рейтинг</div>
+                    <div id="ratings-list"></div>
                 </div>
-                <button class="btn-base save-btn" onclick="window.saveBook()">СОХРАНИТЬ КОНСПЕКТ</button>
+
+                <button class="btn-base save-btn" onclick="window.saveBook()">СОХРАНИТЬ</button>
             </div>
         </div>
 
+        <!-- View Mode -->
         <div id="tab-view" class="section hidden">
-            <div class="view-note" id="note-details"></div>
+            <div id="note-details" class="view-note"></div>
         </div>
     </div>
 
     <script>
-        const iconTrash = '<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>';
-        const iconEdit = '<svg viewBox="0 0 512 511" xmlns="http://www.w3.org/2000/svg"><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"></path><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"></path><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"></path></svg>';
-        const iconPdf = '<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><g><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></g></svg>';
+        const iconEdit = `<svg viewBox="0 0 512 511" xmlns="http://www.w3.org/2000/svg"><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"></path><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"></path><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"></path></svg>`;
+        const iconPdf = `<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></svg>`;
+        const iconTrash = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>`;
 
-        const questionsPool = ["кто главные персонажи и какую роль они играют?", "какие отношения или конфликты лежат в основе истории?", "о чём эта книга в целом?", "какую историю она рассказывает?", "какие темы и идеи в ней ключевые?", "как автор выстраивает сюжет или структуру повествования?", "почему я взялась(лся) за эту книгу?", "какое было настроение во время чтения?", "в какой момент текст начал увлекать?", "что в книге показалось самым сильным?", "какие сцены или мысли запомнились больше всего?", "какие вопросы поднимает автор?", "как раскрываются персонажи или центральные образы?", "с кем из героев или позиций я себя соотнёс(лась)?", "какие эмоции книга вызвала?", "где откликнулось сильнее всего?", "что вызвало сопротивление или несогласие?", "какую мысль я уношу с собой?", "изменилось ли моё восприятие темы после прочтения?", "как книга пересеклась с моим личным опытом?", "в каком жизненном контексте она читается особенно точно?", "какое послевкусие осталось после финала?", "кому и зачем я бы порекомендовал(а) эту книгу?"];
-        const ratingCriteria = ["Сюжет и интрига", "Персонажи и их развитие", "Стиль и язык", "Эмоциональное воздействие", "Оригинальность", "Темп и динамика", "Атмосфера и мир", "Польза и познавательность", "Перечитываемость", "Концовка"];
+        const questionsPool = ["О чём эта книга в целом?", "Какие темы и идеи ключевые?", "Что показалось самым сильным?", "Главные персонажи и их роль?", "Какие сцены запомнились?", "Какие эмоции книга вызвала?", "Что вызвало несогласие?", "Какую мысль я уношу с собой?", "Кому бы я порекомендовал?"];
+        const ratingCriteria = ["Сюжет", "Персонажи", "Стиль", "Эмоции", "Оригинальность", "Динамика", "Атмосфера", "Польза", "Финал", "Оформление"];
         const monthIndices = { 'Январь': 0, 'Февраль': 1, 'Март': 2, 'Апрель': 3, 'Май': 4, 'Июнь': 5, 'Июль': 6, 'Август': 7, 'Сентябрь': 8, 'Октябрь': 9, 'Ноябрь': 10, 'Декабрь': 11 };
 
         let books = [];
         let currentEditingId = null;
         let selectedCoverBase64 = null;
 
-        // --- ГЛОБАЛЬНЫЕ ФУНКЦИИ ---
         window.switchTab = (tabId) => {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
             const target = document.getElementById(`tab-${tabId}`);
             if (target) target.classList.remove('hidden');
-            
+
             const addBtn = document.getElementById('btn-add-global');
             const navTabs = document.getElementById('nav-tabs');
+            const searchBar = document.getElementById('search-bar-container');
 
             if (tabId === 'add' || tabId === 'view') {
                 navTabs.classList.add('hidden');
+                searchBar.classList.add('hidden');
                 addBtn.innerText = "Назад";
                 addBtn.onclick = () => window.switchTab('all');
             } else {
                 navTabs.classList.remove('hidden');
+                searchBar.classList.toggle('hidden', tabId !== 'all' && tabId !== 'rating');
                 addBtn.innerText = "+ Книга";
                 addBtn.onclick = () => window.openAddForm();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.tab === tabId));
+                window.renderCurrentTab();
             }
-            renderCurrentTab();
+            window.scrollTo(0,0);
         };
 
-        function renderCurrentTab() {
+        window.renderCurrentTab = () => {
             const activeTab = document.querySelector('.nav-item.active')?.dataset.tab || 'all';
-            if (activeTab === 'all') renderAll();
-            else if (activeTab === 'months') renderMonths();
-            else if (activeTab === 'authors') renderAuthors();
-            else if (activeTab === 'tags') renderTags();
+            const query = document.getElementById('shelf-search').value.toLowerCase();
+            const filtered = books.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query));
+
+            if (activeTab === 'all') renderShelf('shelf-all', filtered);
+            else if (activeTab === 'rating') renderRatingTab(filtered);
+            else if (activeTab === 'months') renderByMonths(filtered);
+            else if (activeTab === 'authors') renderByAuthors(filtered);
+            else if (activeTab === 'tags') renderByTags(filtered);
+        };
+
+        function getRatingClass(val) {
+            const n = parseFloat(val);
+            if (n < 5) return 'rating-red';
+            if (n < 8) return 'rating-blue';
+            return 'rating-green';
         }
 
-        // Логика автоматической сортировки
-        function getSortedBooks(arr, mode) {
-            let sorted = [...arr];
-            const activeTab = document.querySelector('.nav-item.active')?.dataset.tab || 'all';
+        function createCard(b) {
+            const div = document.createElement('div');
+            div.className = 'book-card';
+            div.onclick = () => window.viewBook(b.id);
+            div.innerHTML = `
+                <div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>
+                <div class="book-cover">
+                    <img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'">
+                    <div class="book-date-badge">${b.month}</div>
+                </div>
+            `;
+            return div;
+        }
 
-            // Авторы и Хэштеги всегда по алфавиту
-            if (activeTab === 'authors' || activeTab === 'tags') {
-                sorted.sort((a, b) => a.title.localeCompare(b.title));
-            } 
-            // Все и Месяцы - всегда по дате (Новые сверху)
-            else {
-                sorted.sort((a, b) => {
-                    if (b.year !== a.year) return parseInt(b.year) - parseInt(a.year);
-                    return monthIndices[b.month] - monthIndices[a.month];
-                });
+        function renderShelf(containerId, data) {
+            const shelf = document.getElementById(containerId);
+            shelf.innerHTML = '';
+            if (containerId === 'shelf-all') {
+                const add = document.createElement('div');
+                add.className = 'book-card';
+                add.onclick = () => window.openAddForm();
+                add.innerHTML = `<div class="book-cover add-card" style="border: 2px dashed var(--tg-hint); display: flex; align-items: center; justify-content: center; background:transparent"><span style="font-size: 40px; color: var(--tg-hint); font-weight: 300;">+</span></div>`;
+                shelf.appendChild(add);
             }
-            return sorted;
+            data.sort((a,b) => b.year !== a.year ? b.year - a.year : monthIndices[b.month] - monthIndices[a.month]).forEach(b => shelf.appendChild(createCard(b)));
+        }
+
+        function renderRatingTab(data) {
+            const shelf = document.getElementById('shelf-rating');
+            shelf.innerHTML = '';
+            const sorted = [...data].sort((a,b) => parseFloat(b.rating) - parseFloat(a.rating));
+            sorted.forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'rating-list-item';
+                item.onclick = () => window.viewBook(b.id);
+                item.innerHTML = `
+                    <img class="rating-list-img" src="${b.img}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='">
+                    <div class="rating-list-content">
+                        <div class="rl-title">${b.title}</div>
+                        <div class="rl-author">${b.author}</div>
+                        <div class="rl-meta">${b.genre} • ${b.month} ${b.year}</div>
+                        <div class="rl-tags">${(b.tags || []).slice(0,3).map(t => `<span class="rl-tag">#${t}</span>`).join('')}</div>
+                    </div>
+                    <div class="rl-score-box ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>
+                `;
+                shelf.appendChild(item);
+            });
+        }
+
+        function renderByMonths(data) {
+            const shelf = document.getElementById('shelf-months');
+            shelf.innerHTML = '';
+            const years = [...new Set(data.map(b => b.year))].sort((a,b) => b-a);
+            years.forEach(y => {
+                const yearBooks = data.filter(b => b.year === y);
+                const months = [...new Set(yearBooks.map(b => b.month))].sort((a,b) => monthIndices[b] - monthIndices[a]);
+                months.forEach(m => {
+                    const group = document.createElement('div');
+                    group.innerHTML = `<div class="group-title">${m} ${y}</div>`;
+                    const grid = document.createElement('div');
+                    grid.className = 'book-shelf';
+                    yearBooks.filter(b => b.month === m).forEach(b => grid.appendChild(createCard(b)));
+                    group.appendChild(grid);
+                    shelf.appendChild(group);
+                });
+            });
+        }
+
+        function renderByAuthors(data) {
+            const shelf = document.getElementById('shelf-authors');
+            shelf.innerHTML = '';
+            const allAuthors = [...new Set(data.flatMap(b => b.author.split(',').map(s => s.trim()).filter(Boolean)))].sort();
+            allAuthors.forEach(a => {
+                const group = document.createElement('div');
+                group.innerHTML = `<div class="group-title">${a}</div>`;
+                const grid = document.createElement('div');
+                grid.className = 'book-shelf';
+                data.filter(b => b.author.split(',').map(s => s.trim()).includes(a)).forEach(b => grid.appendChild(createCard(b)));
+                group.appendChild(grid);
+                shelf.appendChild(group);
+            });
+        }
+
+        function renderByTags(data) {
+            const shelf = document.getElementById('shelf-tags');
+            shelf.innerHTML = '';
+            const tags = [...new Set(data.flatMap(b => b.tags || []))].sort();
+            tags.forEach(t => {
+                const group = document.createElement('div');
+                group.innerHTML = `<div class="group-title">${t}</div>`;
+                const grid = document.createElement('div');
+                grid.className = 'book-shelf';
+                data.filter(b => (b.tags || []).includes(t)).forEach(b => grid.appendChild(createCard(b)));
+                group.appendChild(grid);
+                shelf.appendChild(group);
+            });
         }
 
         window.openAddForm = (bookId = null) => {
             currentEditingId = bookId;
             window.switchTab('add');
-            populateYears();
-            
+            const yearSel = document.getElementById('f-year');
+            if (yearSel.options.length === 0) {
+                const cur = new Date().getFullYear();
+                for(let i=cur+2; i>=2000; i--) yearSel.add(new Option(i, i));
+                yearSel.value = cur;
+            }
             document.getElementById('f-title').value = '';
             document.getElementById('f-author').value = '';
             document.getElementById('f-genre').value = '';
             document.getElementById('f-tags').value = '';
             document.getElementById('selected-questions').innerHTML = '';
             selectedCoverBase64 = null;
-            document.getElementById('cover-preview-container').innerHTML = `<span>Загрузить<br>обложку</span>`;
-
+            document.getElementById('cover-preview-container').innerHTML = `<span>+<br>Обложка</span>`;
             const book = bookId ? books.find(b => b.id === bookId) : null;
-            
-            // Отрисовка Облака
             document.getElementById('q-cloud').innerHTML = questionsPool.map(q => {
-                const sel = book && book.answers && book.answers[q];
-                return `<div class="q-chip ${sel ? 'selected' : ''}" onclick="window.toggleQuestion(this, '${q.replace(/'/g, "\\'")}')">${q}</div>`;
+                const active = book && book.answers && book.answers[q];
+                return `<div class="q-chip ${active ? 'selected' : ''}" onclick="window.toggleQuestion(this, '${q}')">${q}</div>`;
             }).join('');
-
-            // Отрисовка Рейтинга
             document.getElementById('ratings-list').innerHTML = ratingCriteria.map((c, i) => {
                 const val = (book && book.criteria) ? book.criteria[i] : 5;
-                return `<div class="rating-row"><div class="rating-info"><span>${c}</span><span id="rv-${i}">${val}</span></div><input type="range" class="rating-slider" min="1" max="10" value="${val}" oninput="window.updateRatingVal(${i}, this.value)"></div>`;
+                return `<div class="rating-row"><div class="rating-info"><span>${c}</span><span id="rv-${i}">${val}</span></div><input type="range" class="rating-slider" min="1" max="10" value="${val}" oninput="document.getElementById('rv-${i}').innerText=this.value"></div>`;
             }).join('');
-
             if (book) {
-                document.getElementById('f-title').value = book.title || '';
-                document.getElementById('f-author').value = book.author || '';
-                document.getElementById('f-genre').value = book.genre || '';
+                document.getElementById('f-title').value = book.title;
+                document.getElementById('f-author').value = book.author;
+                document.getElementById('f-genre').value = book.genre;
                 document.getElementById('f-tags').value = (book.tags || []).join(', ');
-                document.getElementById('f-month').value = book.month || 'Январь';
-                document.getElementById('f-year').value = book.year || new Date().getFullYear();
-                if(book.img) {
-                    selectedCoverBase64 = book.img;
-                    document.getElementById('cover-preview-container').innerHTML = `<img src="${book.img}">`;
-                }
-                if(book.answers) {
-                    Object.keys(book.answers).forEach(q => {
-                        const isPredefined = questionsPool.includes(q);
-                        addQuestionToContainer(q, book.answers[q], !isPredefined);
-                    });
-                }
+                document.getElementById('f-month').value = book.month;
+                document.getElementById('f-year').value = book.year;
+                if (book.img) { selectedCoverBase64 = book.img; document.getElementById('cover-preview-container').innerHTML = `<img src="${book.img}">`; }
+                if (book.answers) { Object.entries(book.answers).forEach(([q, a]) => addQuestionItem(q, a, !questionsPool.includes(q))); }
             }
         };
 
-        window.saveBook = () => {
-            const criteria = Array.from(document.querySelectorAll('.rating-slider')).map(s => parseInt(s.value));
-            const avg = (criteria.reduce((a, b) => a + b, 0) / 10).toFixed(1);
-            const answers = {};
-            document.querySelectorAll('.q-item').forEach(item => {
-                const labelEl = item.querySelector('label') || item.querySelector('.custom-q-label-input');
-                const label = (labelEl.tagName === 'INPUT') ? labelEl.value : labelEl.innerText;
-                const text = item.querySelector('textarea').value;
-                if(label && label.trim()) answers[label] = text;
-            });
-
-            const bookData = {
-                id: currentEditingId || Date.now().toString(),
-                title: document.getElementById('f-title').value || 'Без названия',
-                author: document.getElementById('f-author').value || 'Неизвестен',
-                genre: document.getElementById('f-genre').value || '',
-                month: document.getElementById('f-month').value,
-                year: document.getElementById('f-year').value,
-                rating: avg,
-                img: selectedCoverBase64 || '',
-                tags: document.getElementById('f-tags').value.split(',').map(t => t.trim().startsWith('#') ? t.trim() : '#' + t.trim()).filter(t => t !== '#'),
-                answers, criteria
-            };
-
-            if (currentEditingId) books = books.map(b => b.id === currentEditingId ? bookData : b);
-            else books.unshift(bookData);
-            
-            localStorage.setItem('reading_journal_data', JSON.stringify(books));
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-            window.switchTab('all');
-        };
-
-        window.addCustomQuestion = () => {
-            addQuestionToContainer('', '', true);
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        };
-
-        function addQuestionToContainer(q, val, isCustom = false) {
-            const container = document.getElementById('selected-questions');
-            const id = isCustom ? ('custom-' + Date.now() + Math.random()) : ('q-field-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, ''));
-            if (!isCustom && document.getElementById(id)) return;
-            const item = document.createElement('div');
-            item.className = 'q-item';
-            item.id = id;
-            item.innerHTML = isCustom 
-                ? `<input type="text" class="custom-q-label-input" value="${q}" placeholder="Введите свой вопрос"><div class="delete-q-btn" onclick="this.parentElement.remove()">${iconTrash}</div><textarea placeholder="Ваш ответ...">${val}</textarea>`
-                : `<label>${q}</label><textarea placeholder="Ваш ответ...">${val}</textarea>`;
-            container.appendChild(item);
-        }
-
         window.toggleQuestion = (el, q) => {
             el.classList.toggle('selected');
-            const id = 'q-field-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
-            if (el.classList.contains('selected')) addQuestionToContainer(q, '', false);
+            const id = 'q-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
+            if (el.classList.contains('selected')) addQuestionItem(q, '', false);
             else document.getElementById(id)?.remove();
         };
 
-        window.updateRatingVal = (id, val) => {
-            const display = document.getElementById(`rv-${id}`);
-            if(display) display.innerText = val;
-        };
+        function addQuestionItem(q, val, isCustom) {
+            const container = document.getElementById('selected-questions');
+            const id = isCustom ? ('custom-' + Date.now() + Math.random()) : ('q-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, ''));
+            if (!isCustom && document.getElementById(id)) return;
+            const div = document.createElement('div');
+            div.className = 'q-item';
+            div.id = id;
+            div.innerHTML = `<div class="q-header-row">${isCustom ? `<input type="text" class="custom-q-label-input" value="${q}" placeholder="Свой вопрос...">` : `<label>${q}</label>`}<div class="delete-q-btn" onclick="this.closest('.q-item').remove()">${iconTrash}</div></div><textarea placeholder="Ваш ответ...">${val}</textarea>`;
+            container.appendChild(div);
+        }
+
+        window.addCustomQuestion = () => addQuestionItem('', '', true);
 
         window.previewImage = (input) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => {
-                    selectedCoverBase64 = e.target.result;
-                    document.getElementById('cover-preview-container').innerHTML = `<img src="${e.target.result}">`;
-                }
+                reader.onload = e => { selectedCoverBase64 = e.target.result; document.getElementById('cover-preview-container').innerHTML = `<img src="${e.target.result}">`; };
                 reader.readAsDataURL(input.files[0]);
             }
         };
 
-        window.viewBook = (id) => {
-            const book = books.find(b => b.id === id);
-            if (!book) return;
-            const container = document.getElementById('note-details');
-            const rClass = getRatingClass(book.rating);
-            let qaHtml = '';
-            if (book.answers && Object.keys(book.answers).length > 0) {
-                Object.entries(book.answers).forEach(([q, a]) => { 
-                    if(a && a.trim()) qaHtml += `<div class="note-qa-item"><span class="q">${q}</span><div class="a">${a}</div></div>`; 
-                });
-                qaHtml += `<div class="pdf-divider"></div>`;
-            } else qaHtml = `<p style="color:var(--tg-hint); font-size: 14px; text-align:center">Конспект пуст...</p>`;
-            
-            let ratingsHtml = `<div class="view-detailed-ratings"><div class="group-title">Рейтинг книги</div><div class="pdf-ratings-list">`;
-            ratingCriteria.forEach((name, i) => {
-                const score = parseFloat(book.criteria ? book.criteria[i] : 0);
-                ratingsHtml += `<div class="view-rating-item"><span>${name}:</span><span class="rating-badge-score">${score.toFixed(1)}</span></div>`;
+        window.saveBook = () => {
+            const title = document.getElementById('f-title').value.trim();
+            if (!title) { Telegram.WebApp.showAlert('Пожалуйста, введите название книги'); return; }
+            const criteria = Array.from(document.querySelectorAll('.rating-slider')).map(s => parseInt(s.value));
+            const avg = (criteria.reduce((a,b) => a+b, 0) / criteria.length).toFixed(1);
+            const answers = {};
+            document.querySelectorAll('.q-item').forEach(item => {
+                const labelEl = item.querySelector('label') || item.querySelector('.custom-q-label-input');
+                const label = labelEl.tagName === 'INPUT' ? labelEl.value.trim() : labelEl.innerText;
+                const text = item.querySelector('textarea').value.trim();
+                if (label && text) answers[label] = text;
             });
-            ratingsHtml += '</div></div>';
+            const authorRaw = document.getElementById('f-author').value.trim() || 'Неизвестный автор';
+            const authorNormalized = authorRaw.split(',').map(a => a.trim()).filter(Boolean).join(', ');
+            const bookData = { id: currentEditingId || Date.now().toString(), title, author: authorNormalized, genre: document.getElementById('f-genre').value.trim(), month: document.getElementById('f-month').value, year: document.getElementById('f-year').value, rating: avg, img: selectedCoverBase64 || '', tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(t => t), answers, criteria };
+            if (currentEditingId) books = books.map(b => b.id === currentEditingId ? bookData : b);
+            else books.unshift(bookData);
+            localStorage.setItem('reading_journal_v2', JSON.stringify(books));
+            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            window.switchTab('all');
+        };
+
+        window.viewBook = (id) => {
+            const b = books.find(x => x.id === id);
+            if (!b) return;
+            const container = document.getElementById('note-details');
+            let qaHtml = '';
+            Object.entries(b.answers || {}).forEach(([q, a]) => { qaHtml += `<div class="note-qa-item"><span class="q">${q}</span><div class="a">${a}</div></div>`; });
+            let ratingsHtml = `<div class="view-detailed-ratings"><div class="group-title">Детальный рейтинг</div>`;
+            ratingCriteria.forEach((name, i) => { ratingsHtml += `<div class="view-rating-item"><span>${name}</span><span class="rating-badge-score">${b.criteria[i]}</span></div>`; });
+            ratingsHtml += '</div>';
 
             container.innerHTML = `
                 <div class="view-header-flex">
-                    <div class="view-book-side">
-                        <div class="view-cover-fixed">
-                            <div class="book-cover" style="box-shadow: 0 4px 15px rgba(0,0,0,0.4)">
-                                <img src="${book.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'">
-                                <div class="rating-badge ${rClass}">${parseFloat(book.rating).toFixed(1)}</div>
-                            </div>
-                        </div>
-                        <div class="view-info-text">
-                            <h1>${book.title}</h1>
-                            <h2>${book.author}</h2>
-                            <div style="color:var(--tg-hint); margin-top:4px; font-size:15px">
-                                <span style="font-weight:600">${book.month}</span> 
-                                <span style="font-size:13px; font-style:italic; margin-left:4px">${book.year}</span>
-                            </div>
+                    <div class="view-cover-fixed">
+                        <div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>
+                        <div class="book-cover">
+                            <img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'">
                         </div>
                     </div>
-                    <div class="view-actions-side">
-                        <button class="btn-base btn-mini-action fill" onclick="window.openAddForm('${book.id}')">${iconEdit}<span>Редактировать</span></button>
-                        <button class="btn-base btn-mini-action" onclick="window.exportPDF('${book.title.replace(/[^a-z0-9]/gi, '_')}')">${iconPdf}<span>PDF</span></button>
-                        <button class="btn-base btn-mini-action" onclick="window.deleteBook('${book.id}')">${iconTrash}<span>Удалить</span></button>
+                    <div class="view-info-text">
+                        <h1>${b.title}</h1>
+                        <h2>${b.author}</h2>
+                        <div class="view-genre">${b.genre || ''}</div>
+                        <div>
+                            <span class="view-month">${b.month}</span>
+                            <span class="view-year">${b.year}</span>
+                        </div>
+                        <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px">
+                            ${(b.tags || []).map(t => `<span class="view-tag">#${t}</span>`).join('')}
+                        </div>
                     </div>
                 </div>
-                <div class="note-qa">${qaHtml}</div>
+                <div class="view-actions-side">
+                    <button class="btn-base btn-mini-action fill" onclick="window.openAddForm('${b.id}')">${iconEdit}</button>
+                    <button class="btn-base btn-mini-action" onclick="window.exportPDF('${b.title}')">${iconPdf}</button>
+                    <button class="btn-base btn-mini-action" onclick="window.deleteBook('${b.id}')">${iconTrash}</button>
+                </div>
+                <div class="note-qa">${qaHtml || '<p style="text-align:center; opacity:0.5">Нет заметок</p>'}</div>
                 ${ratingsHtml}
             `;
             window.switchTab('view');
         };
 
-        window.exportPDF = async (bookTitle) => {
+        window.exportPDF = async (name) => {
             const element = document.getElementById('note-details');
-            try {
-                document.body.classList.add('pdf-export-mode');
-                const opt = {
-                    margin: 10, filename: `Journal_${bookTitle}.pdf`, image: { type: 'jpeg', quality: 1.0 },
-                    html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 820, onclone: (cloned) => {
-                        const note = cloned.getElementById('note-details');
-                        note.style.width = '750px'; note.style.margin = '0 auto'; note.style.padding = '40px';
-                        const actions = cloned.querySelector('.view-actions-side');
-                        if(actions) actions.style.display = 'none';
-                        
-                        note.querySelectorAll('.view-rating-item').forEach(item => { 
-                            item.style.display = 'flex'; 
-                            item.style.justifyContent = 'space-between'; 
-                            item.style.width = '100%';
-                            item.style.marginBottom = '10px';
-                            item.style.borderBottom = '0.5px solid #f5f5f5';
-                            item.style.paddingBottom = '4px';
-                        });
-                        
-                        const badge = note.querySelector('.rating-badge');
-                        if (badge) {
-                            badge.style.color = '#ffffff';
-                            badge.style.backgroundColor = 'rgba(0,0,0,0.4)';
-                        }
-                    }}, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                await html2pdf().set(opt).from(element).save();
-            } finally { document.body.classList.remove('pdf-export-mode'); }
+            document.body.classList.add('pdf-export-mode');
+            const opt = { margin: 10, filename: `Reading_Note_${name.replace(/\s+/g, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            try { await html2pdf().set(opt).from(element).save(); } finally { document.body.classList.remove('pdf-export-mode'); }
         };
 
-        function getRatingClass(val) { const n = parseFloat(val); return n <= 4 ? 'rating-red' : (n <= 7 ? 'rating-blue' : 'rating-green'); }
-        
-        function createShelfBook(b) {
-            const div = document.createElement('div'); div.className = 'book-card';
-            div.onclick = () => window.viewBook(b.id);
-            div.innerHTML = `<div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"><div class="book-date-badge">${b.month}</div></div>`;
-            return div;
-        }
-
-        function renderAll() {
-            const shelf = document.getElementById('shelf-all');
-            shelf.innerHTML = '<div class="book-card" onclick="window.openAddForm()"><div class="book-cover add-card"><span>+</span></div></div>';
-            getSortedBooks(books).forEach(b => shelf.appendChild(createShelfBook(b)));
-        }
-
-        function renderMonths() {
-            const shelf = document.getElementById('shelf-months'); shelf.innerHTML = '';
-            const sorted = getSortedBooks(books);
-            const years = [...new Set(sorted.map(b => b.year))].sort((a,b) => b-a);
-            years.forEach(y => {
-                const yearBooks = sorted.filter(b => b.year === y);
-                const monthsInYear = [...new Set(yearBooks.map(b => b.month))].sort((a,b) => monthIndices[b] - monthIndices[a]);
-                monthsInYear.forEach(m => {
-                    const cont = document.createElement('div');
-                    cont.innerHTML = `<div class="group-title">${m} <span style="font-size:14px; opacity:0.7; font-style:italic">${y}</span></div>`;
-                    const grid = document.createElement('div'); grid.className = 'book-shelf';
-                    yearBooks.filter(b => b.month === m).forEach(b => grid.appendChild(createShelfBook(b)));
-                    cont.appendChild(grid); shelf.appendChild(cont);
-                });
-            });
-        }
-        
-        function renderAuthors() {
-            const shelf = document.getElementById('shelf-authors'); shelf.innerHTML = '';
-            const sorted = getSortedBooks(books);
-            let authorsList = []; 
-            sorted.forEach(b => authorsList.push(...b.author.split(',').map(a => a.trim())));
-            const uniqueAuthors = [...new Set(authorsList)].sort((a, b) => a.localeCompare(b));
-            uniqueAuthors.forEach(a => {
-                if(!a) return;
-                const cont = document.createElement('div'); cont.innerHTML = `<div class="group-title">${a}</div>`;
-                const grid = document.createElement('div'); grid.className = 'book-shelf';
-                sorted.filter(b => b.author.split(',').map(p => p.trim()).includes(a)).forEach(b => grid.appendChild(createShelfBook(b)));
-                cont.appendChild(grid); shelf.appendChild(cont);
-            });
-        }
-
-        function renderTags() {
-            const shelf = document.getElementById('shelf-tags'); shelf.innerHTML = '';
-            const sorted = getSortedBooks(books);
-            const tags = [...new Set(sorted.flatMap(b => b.tags || []))].filter(t => t).sort((a, b) => a.localeCompare(b));
-            tags.forEach(t => {
-                const cont = document.createElement('div'); cont.innerHTML = `<div class="group-title">${t}</div>`;
-                const grid = document.createElement('div'); grid.className = 'book-shelf';
-                sorted.filter(b => (b.tags || []).includes(t)).forEach(b => grid.appendChild(createShelfBook(b)));
-                cont.appendChild(grid); shelf.appendChild(cont);
-            });
-        }
-
-        function populateYears() {
-            const yearSelect = document.getElementById('f-year');
-            if(!yearSelect) return;
-            yearSelect.innerHTML = '';
-            const currentYear = new Date().getFullYear();
-            for (let y = currentYear + 5; y >= 1950; y--) {
-                const opt = document.createElement('option');
-                opt.value = y; opt.textContent = y;
-                if (y === currentYear) opt.selected = true;
-                yearSelect.appendChild(opt);
-            }
-        }
-
         window.deleteBook = (id) => {
-            Telegram.WebApp.showPopup({
-                title: 'Удаление', message: 'Вы действительно хотите удалить этот конспект?',
-                buttons: [{id: 'delete', type: 'destructive', text: 'Удалить'}, {id: 'cancel', type: 'cancel', text: 'Отмена'}]
-            }, (buttonId) => {
-                if (buttonId === 'delete') {
-                    books = books.filter(b => b.id !== id);
-                    localStorage.setItem('reading_journal_data', JSON.stringify(books));
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                    window.switchTab('all');
-                }
-            });
+            Telegram.WebApp.showConfirm("Вы уверены, что хотите удалить этот конспект?", (confirmed) => { if (confirmed) { books = books.filter(b => b.id !== id); localStorage.setItem('reading_journal_v2', JSON.stringify(books)); window.switchTab('all'); } });
         };
 
         window.onload = () => {
-            const saved = localStorage.getItem('reading_journal_data');
+            const saved = localStorage.getItem('reading_journal_v2');
             if (saved) books = JSON.parse(saved);
-            renderAll(); populateYears();
+            window.switchTab('all');
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
         };
     </script>
 </body>
