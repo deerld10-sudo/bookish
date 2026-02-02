@@ -66,7 +66,7 @@
 
         /* Search Bar */
         .search-container {
-            padding: 0 16px 12px 16px;
+            padding: 12px 16px; /* Updated: symmetrical spacing from divider */
             background: var(--tg-bg);
         }
         .search-input {
@@ -243,13 +243,14 @@
         .view-cover-fixed { width: 140px; flex-shrink: 0; position: relative; }
         .view-info-text h1 { font-size: 22px; margin: 0 0 8px 0; }
         
-        /* Заголовки в просмотре: Автор, Жанр, Месяц - 16px. Год - 12px. */
+        /* Headers in View: Author, Genre, Month - 16px. Year - 12px. */
         .view-info-text h2 { font-size: 16px; color: var(--tg-text); margin: 0 0 4px 0; font-weight: 500; }
-        .view-genre { color: var(--tg-hint) !important; font-style: italic !important; font-weight: 400 !important; font-size: 16px; margin-bottom: 4px; }
+        .view-genre { color: var(--tg-hint) !important; font-weight: 400 !important; font-size: 16px; margin-bottom: 4px; }
         .view-month { font-size: 16px; color: var(--tg-hint); display: inline-block; }
         .view-year { font-size: 12px; color: var(--tg-hint); font-style: italic; display: inline-block; margin-left: 4px; }
         
         .view-tag { font-size: 11px; background: var(--tg-sec-bg); padding: 4px 8px; border-radius: 6px; color: var(--tg-hint); }
+        .view-tags-container { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
 
         .view-actions-side { display: flex; gap: 12px; margin-bottom: 32px; align-items: center; }
 
@@ -272,16 +273,38 @@
         @media (max-width: 600px) {
             .view-header-flex { flex-direction: column; align-items: center; text-align: center; }
             .view-actions-side { justify-content: center; }
+            .view-tags-container { justify-content: center; }
         }
 
         /* PDF Styles */
         .pdf-export-mode { background: #fff !important; color: #000 !important; }
         .pdf-export-mode #note-details { padding: 40px !important; color: #000 !important; }
+        .pdf-export-mode .view-actions-side { display: none !important; }
         .pdf-export-mode .note-qa-item { border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        
+        /* Unified font sizes for PDF */
+        .pdf-export-mode .q, 
+        .pdf-export-mode .a, 
+        .pdf-export-mode .view-rating-item { 
+            font-size: 14px !important; 
+        }
+
         .pdf-export-mode .q { color: #888 !important; }
         .pdf-export-mode .a { color: #000 !important; border-left-color: #5a8c20 !important; }
+        .pdf-export-mode .view-info-text h1 { color: #000 !important; }
+        .pdf-export-mode .view-info-text h2 { color: #000 !important; } /* Author black */
         .pdf-export-mode .view-genre { color: #999 !important; }
         .pdf-export-mode .view-tag { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #eee; }
+        
+        /* Gray plate for ratings in PDF */
+        .pdf-export-mode .view-detailed-ratings { 
+            background: #f5f5f5 !important; 
+            border: 1px solid #eee; 
+            color: #000 !important; 
+            padding: 20px !important;
+            border-radius: 12px !important;
+        }
+        .pdf-export-mode .view-rating-item { border-bottom-color: #ddd; }
     </style>
 </head>
 <body>
@@ -640,7 +663,7 @@
                             <span class="view-month">${b.month}</span>
                             <span class="view-year">${b.year}</span>
                         </div>
-                        <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px">
+                        <div class="view-tags-container">
                             ${(b.tags || []).map(t => `<span class="view-tag">#${t}</span>`).join('')}
                         </div>
                     </div>
@@ -659,7 +682,13 @@
         window.exportPDF = async (name) => {
             const element = document.getElementById('note-details');
             document.body.classList.add('pdf-export-mode');
-            const opt = { margin: 10, filename: `Reading_Note_${name.replace(/\s+/g, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            const opt = { 
+                margin: 10, 
+                filename: `Reading_Note_${name.replace(/\s+/g, '_')}.pdf`, 
+                image: { type: 'jpeg', quality: 0.98 }, 
+                html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+            };
             try { await html2pdf().set(opt).from(element).save(); } finally { document.body.classList.remove('pdf-export-mode'); }
         };
 
