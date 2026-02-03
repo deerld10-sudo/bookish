@@ -18,6 +18,7 @@
             --rating-blue: rgba(46, 78, 220, 0.8);
             --rating-green: rgba(133, 188, 65, 0.8);
             --card-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            --check-blue: #3a96ff;
         }
 
         * { 
@@ -66,7 +67,7 @@
 
         /* Search Bar */
         .search-container {
-            padding: 12px 16px; /* Updated: symmetrical spacing from divider */
+            padding: 12px 16px;
             background: var(--tg-bg);
         }
         .search-input {
@@ -124,7 +125,161 @@
             border-left: 3px solid var(--tg-accent); padding-left: 12px;
         }
 
-        /* Rating Tab List Styles */
+        /* Goal Section Styles */
+        .goal-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .goal-header h2 {
+            font-size: 18px; font-weight: 700; margin: 0;
+            border-left: 3px solid var(--tg-accent); padding-left: 12px;
+        }
+        
+        .goal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .goal-slot {
+            aspect-ratio: 2/3;
+            background: #252527;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #38383a;
+            position: relative;
+        }
+        .goal-slot.filled {
+            background: var(--tg-sec-bg);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .goal-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .check-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 22px;
+            height: 22px;
+            background: var(--check-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--tg-bg);
+            z-index: 5;
+            color: #fff;
+        }
+        .check-badge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+
+        .goal-footer { margin-top: 24px; text-align: center; }
+        .goal-footer-main { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .goal-footer-sub { font-size: 13px; color: var(--tg-hint); }
+
+        /* Modal Settings */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .goal-modal {
+            background: var(--tg-sec-bg);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .goal-modal h3 { margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: var(--tg-text); }
+        
+        .goal-input-box {
+            background: var(--tg-bg);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            height: 44px;
+        }
+        .goal-input-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+            padding: 0;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        .goal-input-box input::-webkit-outer-spin-button,
+        .goal-input-box input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .goal-input-box span { color: var(--tg-hint); font-size: 14px; }
+        
+        .goal-stepper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            padding-left: 8px;
+        }
+        .goal-stepper-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 12px;
+            opacity: 0.6;
+        }
+        .goal-stepper-btn:active { opacity: 1; }
+        .goal-stepper-btn svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+
+        .goal-modal-btns { display: flex; gap: 12px; width: 100%; }
+        .btn-goal-action {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+        .btn-goal-action:active { opacity: 0.7; }
+        .btn-goal-save { background: var(--tg-accent); color: #fff; }
+        .btn-goal-cancel { background: var(--tg-bg); color: var(--tg-text); }
+
+        /* Tab List Styles */
         .rating-list-container { display: flex; flex-direction: column; gap: 12px; }
         .rating-list-item { 
             display: flex; gap: 16px; background: var(--tg-sec-bg); 
@@ -175,7 +330,6 @@
             pointer-events: none; width: 14px; height: 14px; opacity: 0.5;
         }
 
-        /* Q&A Cloud */
         .questions-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
         .q-chip { 
             padding: 8px 14px; background: var(--tg-sec-bg); border-radius: 18px; 
@@ -183,7 +337,6 @@
         }
         .q-chip.selected { background: var(--tg-accent); color: #fff; font-weight: 500; }
 
-        /* Q&A Item Form */
         .q-item { 
             background: var(--tg-sec-bg); border-radius: 14px; padding: 16px; 
             margin-bottom: 16px; position: relative; 
@@ -209,7 +362,6 @@
         }
         .delete-q-btn svg { width: 100%; height: 100%; fill: currentColor; }
 
-        /* Ratings */
         .rating-row { margin-bottom: 16px; }
         .rating-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--tg-hint); }
         .rating-slider { 
@@ -222,7 +374,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Buttons */
+        /* Standardized Buttons */
         .btn-base {
             padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 700; 
             cursor: pointer; text-align: center; border: none;
@@ -230,11 +382,10 @@
         }
         .save-btn { background: var(--tg-accent); color: #fff; width: 100%; margin-top: 20px; padding: 14px; }
         
-        .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: 10px; width: 44px; height: 44px; padding: 0; }
+        .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: 10px; width: 44px; height: 44px; padding: 0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-mini-action.fill { background: var(--tg-accent); color: #fff; }
         .btn-mini-action svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* View Note */
         .view-note { max-width: 800px; margin: 0 auto; padding-bottom: 60px; }
         .view-header-flex { 
             display: flex; gap: 24px; margin-bottom: 24px; 
@@ -242,19 +393,15 @@
         }
         .view-cover-fixed { width: 140px; flex-shrink: 0; position: relative; }
         .view-info-text h1 { font-size: 22px; margin: 0 0 8px 0; }
-        
-        /* Headers in View: Author, Genre, Month - 16px. Year - 12px. */
         .view-info-text h2 { font-size: 16px; color: var(--tg-text); margin: 0 0 4px 0; font-weight: 500; }
         .view-genre { color: var(--tg-hint) !important; font-weight: 400 !important; font-size: 16px; margin-bottom: 4px; }
         .view-month { font-size: 16px; color: var(--tg-hint); display: inline-block; }
         .view-year { font-size: 12px; color: var(--tg-hint); font-style: italic; display: inline-block; margin-left: 4px; }
-        
         .view-tag { font-size: 11px; background: var(--tg-sec-bg); padding: 4px 8px; border-radius: 6px; color: var(--tg-hint); }
         .view-tags-container { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
 
         .view-actions-side { display: flex; gap: 12px; margin-bottom: 32px; align-items: center; }
 
-        /* QA Display */
         .note-qa-item { margin-bottom: 24px; }
         .note-qa-item .q { 
             font-size: 13px; color: var(--tg-hint); font-style: italic; 
@@ -276,35 +423,17 @@
             .view-tags-container { justify-content: center; }
         }
 
-        /* PDF Styles */
         .pdf-export-mode { background: #fff !important; color: #000 !important; }
         .pdf-export-mode #note-details { padding: 40px !important; color: #000 !important; }
         .pdf-export-mode .view-actions-side { display: none !important; }
         .pdf-export-mode .note-qa-item { border-bottom: 1px solid #eee; padding-bottom: 12px; }
-        
-        /* Unified font sizes for PDF */
-        .pdf-export-mode .q, 
-        .pdf-export-mode .a, 
-        .pdf-export-mode .view-rating-item { 
-            font-size: 14px !important; 
-        }
-
+        .pdf-export-mode .q, .pdf-export-mode .a, .pdf-export-mode .view-rating-item { font-size: 14px !important; }
         .pdf-export-mode .q { color: #888 !important; }
         .pdf-export-mode .a { color: #000 !important; border-left-color: #5a8c20 !important; }
-        .pdf-export-mode .view-info-text h1 { color: #000 !important; }
-        .pdf-export-mode .view-info-text h2 { color: #000 !important; } /* Author black */
+        .pdf-export-mode .view-info-text h1, .pdf-export-mode .view-info-text h2 { color: #000 !important; }
         .pdf-export-mode .view-genre { color: #999 !important; }
         .pdf-export-mode .view-tag { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #eee; }
-        
-        /* Gray plate for ratings in PDF */
-        .pdf-export-mode .view-detailed-ratings { 
-            background: #f5f5f5 !important; 
-            border: 1px solid #eee; 
-            color: #000 !important; 
-            padding: 20px !important;
-            border-radius: 12px !important;
-        }
-        .pdf-export-mode .view-rating-item { border-bottom-color: #ddd; }
+        .pdf-export-mode .view-detailed-ratings { background: #f5f5f5 !important; border: 1px solid #eee; color: #000 !important; padding: 20px !important; border-radius: 12px !important; }
     </style>
 </head>
 <body>
@@ -316,6 +445,7 @@
             <div class="nav-item" data-tab="months" onclick="window.switchTab('months')">Месяцы</div>
             <div class="nav-item" data-tab="authors" onclick="window.switchTab('authors')">Авторы</div>
             <div class="nav-item" data-tab="tags" onclick="window.switchTab('tags')">Хэштеги</div>
+            <div class="nav-item" data-tab="goal" onclick="window.switchTab('goal')">Цель</div>
         </div>
         <button class="btn-add-top" id="btn-add-global" onclick="window.openAddForm()">+ Книга</button>
     </div>
@@ -340,6 +470,21 @@
         </div>
         <div id="tab-tags" class="section hidden">
             <div id="shelf-tags"></div>
+        </div>
+
+        <!-- Goal Tab -->
+        <div id="tab-goal" class="section hidden">
+            <div class="goal-container">
+                <div class="goal-header">
+                    <h2>Книг за этот год</h2>
+                    <button class="btn-mini-action" onclick="window.openGoalModal()">
+                        <!-- Replaced with fi_2099058 SVG -->
+                        <svg id="fi_2099058" enable-background="new 0 0 512 512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="m272.066 512h-32.133c-25.989 0-47.134-21.144-47.134-47.133v-10.871c-11.049-3.53-21.784-7.986-32.097-13.323l-7.704 7.704c-18.659 18.682-48.548 18.134-66.665-.007l-22.711-22.71c-18.149-18.129-18.671-48.008.006-66.665l7.698-7.698c-5.337-10.313-9.792-21.046-13.323-32.097h-10.87c-25.988 0-47.133-21.144-47.133-47.133v-32.134c0-25.989 21.145-47.133 47.134-47.133h10.87c3.531-11.05 7.986-21.784 13.323-32.097l-7.704-7.703c-18.666-18.646-18.151-48.528.006-66.665l22.713-22.712c18.159-18.184 48.041-18.638 66.664.006l7.697 7.697c10.313-5.336 21.048-9.792 32.097-13.323v-10.87c0-25.989 21.144-47.133 47.134-47.133h32.133c25.989 0 47.133 21.144 47.133 47.133v10.871c11.049 3.53 21.784 7.986 32.097 13.323l7.704-7.704c18.659-18.682 48.548-18.134 66.665.007l22.711 22.71c18.149 18.129 18.671 48.008-.006 66.665l-7.698 7.698c5.337 10.313 9.792 21.046 13.323 32.097h10.87c25.989 0 47.134 21.144 47.134 47.133v32.134c0 25.989-21.145 47.133-47.134 47.133h-10.87c-3.531 11.05-7.986 21.784-13.323 32.097l7.704 7.704c18.666 18.646 18.151 48.528-.006 66.665l-22.713 22.712c-18.159 18.184-48.041 18.638-66.664-.006l-7.697-7.697c-10.313 5.336-21.048 9.792-32.097 13.323v10.871c0 25.987-21.144 47.131-47.134 47.131zm-106.349-102.83c14.327 8.473 29.747 14.874 45.831 19.025 6.624 1.709 11.252 7.683 11.252 14.524v22.148c0 9.447 7.687 17.133 17.134 17.133h32.133c9.447 0 17.134-7.686 17.134-17.133v-22.148c0-6.841 4.628-12.815 11.252-14.524 16.084-4.151 31.504-10.552 45.831-19.025 5.895-3.486 13.4-2.538 18.243 2.305l15.688 15.689c6.764 6.772 17.626 6.615 24.224.007l22.727-22.726c6.582-6.574 6.802-17.438.006-24.225l-15.695-15.695c-4.842-4.842-5.79-12.348-2.305-18.242 8.473-14.326 14.873-29.746 19.024-45.831 1.71-6.624 7.684-11.251 14.524-11.251h22.147c9.447 0 17.134-7.686 17.134-17.133v-32.134c0-9.447-7.687-17.133-17.134-17.133h-22.147c-6.841 0-12.814-4.628-14.524-11.251-4.151-16.085-10.552-31.505-19.024-45.831-3.485-5.894-2.537-13.4 2.305-18.242l15.689-15.689c6.782-6.774 6.605-17.634.006-24.225l-22.725-22.725c-6.587-6.596-17.451-6.789-24.225-.006l-15.694 15.695c-4.842 4.843-12.35 5.791-18.243 2.305-14.327-8.473-29.747-14.874-45.831-19.025-6.624-1.709-11.252-7.683-11.252-14.524v-22.15c0-9.447-7.687-17.133-17.134-17.133h-32.133c-9.447 0-17.134 7.686-17.134 17.133v22.148c0 6.841-4.628 12.815-11.252 14.524-16.084 4.151-31.504 10.552-45.831 19.025-5.896 3.485-13.401 2.537-18.243-2.305l-15.688-15.689c-6.764-6.772-17.627-6.615-24.224-.007l-22.727 22.726c-6.582 6.574-6.802 17.437-.006 24.225l15.695 15.695c4.842 4.842 5.79 12.348 2.305 18.242-8.473 14.326-14.873 29.746-19.024 45.831-1.71 6.624-7.684 11.251-14.524 11.251h-22.148c-9.447.001-17.134 7.687-17.134 17.134v32.134c0 9.447 7.687 17.133 17.134 17.133h22.147c6.841 0 12.814 4.628 14.524 11.251 4.151 16.085 10.552 31.505 19.024 45.831 3.485 5.894 2.537 13.4-2.305 18.242l-15.689 15.689c-6.782 6.774-6.605 17.634-.006 24.225l22.725 22.725c6.587 6.596 17.451 6.789 24.225.006l15.694-15.695c3.568-3.567 10.991-6.594 18.244-2.304z"></path><path d="m256 367.4c-61.427 0-111.4-49.974-111.4-111.4s49.973-111.4 111.4-111.4 111.4 49.974 111.4 111.4-49.973 111.4-111.4 111.4zm0-192.8c-44.885 0-81.4 36.516-81.4 81.4s36.516 81.4 81.4 81.4 81.4-36.516 81.4-81.4-36.515-81.4-81.4-81.4z"></path></svg>
+                    </button>
+                </div>
+                <div class="goal-grid" id="goal-grid-container"></div>
+                <div class="goal-footer" id="goal-footer-info"></div>
+            </div>
         </div>
 
         <!-- Add/Edit Form -->
@@ -395,18 +540,58 @@
         </div>
     </div>
 
+    <!-- Goal Settings Modal -->
+    <div id="goal-modal-overlay" class="modal-overlay hidden" onclick="window.closeGoalModal()">
+        <div class="goal-modal" onclick="event.stopPropagation()">
+            <h3>Годовая цель по чтению</h3>
+            
+            <div class="goal-input-box">
+                <input type="number" id="goal-input-value" value="20" min="1">
+                <span>книг в год</span>
+                <div class="goal-stepper">
+                    <button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepUp()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    </button>
+                    <button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepDown()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="goal-modal-btns">
+                <button class="btn-goal-action btn-goal-cancel" onclick="window.closeGoalModal()">Отменить</button>
+                <button class="btn-goal-action btn-goal-save" onclick="window.saveGoalSettings()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const iconEdit = `<svg viewBox="0 0 512 511" xmlns="http://www.w3.org/2000/svg"><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"></path><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"></path><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"></path></svg>`;
         const iconPdf = `<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></svg>`;
         const iconTrash = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>`;
+        const iconCheck = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
         const questionsPool = ["О чём эта книга в целом?", "Какие темы и идеи ключевые?", "Что показалось самым сильным?", "Главные персонажи и их роль?", "Какие сцены запомнились?", "Какие эмоции книга вызвала?", "Что вызвало несогласие?", "Какую мысль я уношу с собой?", "Кому бы я порекомендовал?"];
-        const ratingCriteria = ["Сюжет", "Персонажи", "Стиль", "Эмоции", "Оригинальность", "Динамика", "Атмосфера", "Польза", "Финал", "Оформление"];
+        
+        const ratingCriteria = [
+            "Сюжет и интрига", 
+            "Персонажи и их развитие", 
+            "Стиль и язык", 
+            "Эмоциональное воздействие", 
+            "Оригинальность", 
+            "Темп и динамика", 
+            "Атмосфера и мир", 
+            "Польза и познавательность", 
+            "Перечитываемость", 
+            "Концовка"
+        ];
+        
         const monthIndices = { 'Январь': 0, 'Февраль': 1, 'Март': 2, 'Апрель': 3, 'Май': 4, 'Июнь': 5, 'Июль': 6, 'Август': 7, 'Сентябрь': 8, 'Октябрь': 9, 'Ноябрь': 10, 'Декабрь': 11 };
 
         let books = [];
         let currentEditingId = null;
         let selectedCoverBase64 = null;
+        let currentYearGoal = 20;
 
         window.switchTab = (tabId) => {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -443,6 +628,7 @@
             else if (activeTab === 'months') renderByMonths(filtered);
             else if (activeTab === 'authors') renderByAuthors(filtered);
             else if (activeTab === 'tags') renderByTags(filtered);
+            else if (activeTab === 'goal') renderGoalTab();
         };
 
         function getRatingClass(val) {
@@ -549,6 +735,73 @@
                 shelf.appendChild(group);
             });
         }
+
+        /* Goal Tab Implementation */
+        function renderGoalTab() {
+            const currentYear = new Date().getFullYear().toString();
+            const yearBooks = books.filter(b => b.year === currentYear);
+            const numRead = yearBooks.length;
+            const container = document.getElementById('goal-grid-container');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= currentYearGoal; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'goal-slot';
+                
+                if (i <= numRead) {
+                    const book = yearBooks[i-1];
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <img src="${book.img}" onerror="this.style.display='none'">
+                        <div class="check-badge">${iconCheck}</div>
+                    `;
+                    slot.onclick = () => window.viewBook(book.id);
+                } else {
+                    slot.innerText = i;
+                }
+                container.appendChild(slot);
+            }
+
+            const footer = document.getElementById('goal-footer-info');
+            const diff = currentYearGoal - numRead;
+            if (diff > 0) {
+                footer.innerHTML = `
+                    <div class="goal-footer-main">${diff} ${getBooksNoun(diff)} до цели</div>
+                    <div class="goal-footer-sub">Продолжайте читать!</div>
+                `;
+            } else {
+                footer.innerHTML = `
+                    <div class="goal-footer-main" style="color: var(--tg-accent)">Цель достигнута! 🎉</div>
+                    <div class="goal-footer-sub">Вы прочитали ${numRead} ${getBooksNoun(numRead)} в этом году.</div>
+                `;
+            }
+        }
+
+        function getBooksNoun(n) {
+            if (n % 10 === 1 && n % 100 !== 11) return 'книга';
+            if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'книги';
+            return 'книг';
+        }
+
+        window.openGoalModal = () => {
+            document.getElementById('goal-input-value').value = currentYearGoal;
+            document.getElementById('goal-modal-overlay').classList.remove('hidden');
+        };
+
+        window.closeGoalModal = () => {
+            document.getElementById('goal-modal-overlay').classList.add('hidden');
+        };
+
+        window.saveGoalSettings = () => {
+            const val = parseInt(document.getElementById('goal-input-value').value);
+            if (val && val > 0) {
+                currentYearGoal = val;
+                localStorage.setItem('reading_goal_v2', currentYearGoal);
+                window.closeGoalModal();
+                renderGoalTab();
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        };
 
         window.openAddForm = (bookId = null) => {
             currentEditingId = bookId;
@@ -699,6 +952,10 @@
         window.onload = () => {
             const saved = localStorage.getItem('reading_journal_v2');
             if (saved) books = JSON.parse(saved);
+
+            const savedGoal = localStorage.getItem('reading_goal_v2');
+            if (savedGoal) currentYearGoal = parseInt(savedGoal);
+
             window.switchTab('all');
             Telegram.WebApp.ready();
             Telegram.WebApp.expand();
