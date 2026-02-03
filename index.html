@@ -962,5 +962,16 @@
             Telegram.WebApp.expand();
         };
     </script>
+<script>
+      // 1. Настройки подключения
+      const supabaseUrl = 'https://tznxdnkwelkyzlrpkrkv.supabase.co';
+      const supabaseKey = 'sb_publishable_THQY_ZNPy4TEWwqwCiNHg_X6mQfXti';
+
+      // 2. Создаем клиента для работы с базой
+      const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+      // 3. Проверка в консоли
+      console.log("Связь с Supabase установлена!", supabaseClient);
+    </script>
 </body>
 </html>
