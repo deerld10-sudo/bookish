@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Reading Journal</title>
+    <!-- Подключаем шрифт Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --tg-bg: #1A1A1C;
-            --tg-sec-bg: #2c2c2e;
+            --tg-sec-bg: #2A2A2C;
             --tg-text: #ffffff;
-            --tg-hint: #8e8e93;
-            --tg-accent: #85BC41; 
-            --rating-red: rgba(208, 47, 47, 0.8);
-            --rating-blue: rgba(46, 78, 220, 0.8);
-            --rating-green: rgba(133, 188, 65, 0.8);
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            --tg-hint: #8E8E93;
+            --tg-accent: #8CD136; 
+            --rating-red: #D34C4C;
+            --rating-blue: #4C6CD3;
+            --rating-green: #2ECB5B;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.3);
             --check-blue: #3a96ff;
+            --border-radius-card: 12px;
+            --border-radius-input: 8px;
         }
 
         * { 
@@ -28,11 +31,12 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-bg);
             color: var(--tg-text);
             margin: 0; padding: 0;
             min-height: 100vh; overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
         .app-container {
@@ -49,86 +53,123 @@
         .top-nav {
             position: sticky; top: 0;
             background-color: var(--tg-bg); z-index: 100;
-            padding: 10px 16px; display: flex; align-items: center; gap: 12px;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .nav-items-wrapper { 
             display: flex; gap: 8px; flex: 1; 
             overflow-x: auto; scrollbar-width: none; 
-            padding-bottom: 2px;
+            padding-bottom: 4px;
         }
         .nav-items-wrapper::-webkit-scrollbar { display: none; }
         .nav-items-wrapper.hidden { display: none !important; }
 
         .nav-item {
-            padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+            padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;
             white-space: nowrap; background-color: var(--tg-sec-bg); color: var(--tg-hint);
             transition: all 0.2s ease; cursor: pointer;
         }
-        .nav-item.active { background-color: var(--tg-text); color: var(--tg-bg); }
+        .nav-item.active { background-color: var(--tg-text); color: #000; font-weight: 600; }
 
         .btn-add-top { 
             background: none; border: none; cursor: pointer; 
-            color: var(--tg-accent); font-size: 14px; font-weight: 600; 
+            color: var(--tg-accent); font-size: 12px; font-weight: 600; 
             white-space: nowrap; padding: 4px 8px;
         }
 
-        /* Search Bar */
+        /* Выпадающее меню языков */
+        .lang-dropdown-container { position: relative; display: flex; align-items: center; }
+        .lang-dropdown-container.hidden { display: none !important; }
+        
+        #btn-lang-toggle {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0; border: none;
+            color: var(--tg-text);
+        }
+        .lang-menu {
+            position: absolute; right: 0; top: calc(100% + 12px);
+            background: var(--tg-sec-bg); border-radius: var(--border-radius-input);
+            padding: 8px; display: flex; flex-direction: column; gap: 4px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6); z-index: 2000;
+            min-width: 80px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lang-menu-item {
+            padding: 10px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+            border-radius: 6px; transition: background 0.2s; text-align: center; color: var(--tg-text);
+        }
+        .lang-menu-item:hover { background: rgba(255,255,255,0.1); }
+
+        /* Search Bar & Themes */
         .search-container {
-            padding: 12px 16px;
+            padding: 16px 20px 20px 20px;
             background: var(--tg-bg);
+            display: flex; flex-direction: column; gap: 12px;
         }
         .search-input {
             width: 100%;
             background: var(--tg-sec-bg);
             border: none;
-            border-radius: 10px;
-            padding: 10px 14px;
+            border-radius: var(--border-radius-input);
+            padding: 12px 16px;
             color: var(--tg-text);
             font-size: 14px;
         }
+        .search-input::placeholder { color: var(--tg-hint); font-weight: 400; }
 
-        /* App padding adjusted to 10px to accommodate new requirements */
-        #app { flex: 1; padding: 10px 16px 16px 16px; }
-        
-        /* Default section padding to maintain 24px distance (10px app + 14px section) */
-        .section { padding-top: 14px; animation: fadeIn 0.3s ease-out; } 
-        
-        /* Overrides for specific sections to have 10px distance from search */
-        #tab-months, #tab-authors, #tab-tags { padding-top: 0; }
+        .zk-themes-cloud { 
+            display: flex; gap: 8px; overflow-x: auto; 
+            scrollbar-width: none; 
+            margin: 0 -20px; padding: 0 20px 4px 20px;
+        }
+        .zk-themes-cloud::-webkit-scrollbar { display: none; }
+        .zk-theme-chip { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;
+            cursor: pointer; white-space: nowrap; color: var(--tg-text); transition: 0.2s;
+        }
+        .zk-theme-chip:hover { background: rgba(255,255,255,0.15); color: var(--tg-accent); border-color: var(--tg-accent); }
 
+        #app { flex: 1; padding: 0 20px 20px 20px; }
+        
+        /* Точные отступы для всех вкладок */
+        #tab-all, #tab-months, #tab-authors, #tab-tags, #tab-cards { padding-top: 4px; } 
+        #tab-rating { padding-top: 0; } 
+        #tab-add, #tab-view, #tab-goal, #tab-deferred { padding-top: 24px; } 
+
+        .section { animation: fadeIn 0.3s ease-out; } 
         .hidden { display: none !important; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Grid Shelf */
         .book-shelf { 
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; 
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; 
             margin: 0 auto; 
         }
-        @media (min-width: 480px) { .book-shelf { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 480px) { .book-shelf { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
 
-        .book-card { position: relative; cursor: pointer; transition: transform 0.2s ease; }
-        .book-card:active { transform: scale(0.95); }
+        .book-card { position: relative; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; }
+        .book-card:active { transform: scale(0.97); }
         .book-cover { 
             width: 100%; aspect-ratio: 2/3; background-color: var(--tg-sec-bg); 
-            border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); 
-            position: relative; border: 0.5px solid rgba(255,255,255,0.05);
-            z-index: 1;
+            border-radius: var(--border-radius-card); overflow: hidden; 
+            position: relative; 
         }
         .book-cover img { width: 100%; height: 100%; object-fit: cover; }
         
-        .book-date-badge { 
-            position: absolute; bottom: 8px; left: 8px; font-size: 10px; 
-            background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 6px; 
-            color: #fff; backdrop-filter: blur(4px); font-weight: 500;
+        .add-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.05); color: var(--tg-hint);
         }
+        .add-card .plus { font-size: 24px; font-weight: 300; margin-bottom: 8px; }
+        .add-card .text { font-size: 13px; font-weight: 500; }
         
         .rating-badge { 
-            position: absolute; top: -8px; right: -8px; font-size: 11px; font-weight: 800; 
-            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; color: #ffffff; z-index: 10; border: 2px solid var(--tg-bg);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            position: absolute; top: -6px; right: -6px; font-size: 11px; font-weight: 700; 
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; color: #ffffff; z-index: 10;
         }
         .rating-red { background-color: var(--rating-red); }
         .rating-blue { background-color: var(--rating-blue); }
@@ -136,305 +177,177 @@
 
         /* Deferred Card Icons */
         .deferred-actions {
-            position: absolute; top: -8px; right: -8px; 
+            position: absolute; top: 6px; right: 6px; 
             display: flex; gap: 6px; z-index: 10;
         }
         .deferred-badge {
-            width: 28px; height: 28px; border-radius: 50%;
+            width: 24px; height: 24px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            border: 2px solid var(--tg-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            cursor: pointer; transition: 0.2s;
-            background: var(--tg-sec-bg); color: #fff;
+            cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.6); color: #fff;
         }
-        .deferred-badge svg { width: 14px; height: 14px; fill: currentColor; }
+        .deferred-badge svg { width: 12px; height: 12px; fill: currentColor; }
+        .deferred-badge:hover { background: rgba(0,0,0,0.8); }
 
         .group-title { 
-            font-size: 18px; font-weight: 700; margin: 24px 0 16px 0; 
-            display: flex; align-items: baseline; gap: 8px; 
-            border-left: 3px solid var(--tg-accent); padding-left: 12px;
+            font-size: 16px; font-weight: 600; margin: 24px 0 16px 0; 
+            display: flex; align-items: center; gap: 8px; 
+            border-left: 3px solid var(--tg-accent); padding-left: 10px;
         }
+        .group-title.flex-between { justify-content: space-between; }
+        
+        #shelf-months .group-title,
+        #shelf-authors .group-title,
+        #shelf-tags .group-title { margin-bottom: 24px; }
 
-        /* Spacing overrides for specific tabs */
-        #tab-months .group-title, 
-        #tab-authors .group-title, 
-        #tab-tags .group-title { 
-            margin-bottom: 24px; /* Title to Content: 24px */
-        }
-        /* Ensure the first header in target sections is exactly 10px from search bar */
+        #shelf-months > div:not(:first-child) .group-title,
+        #shelf-authors > div:not(:first-child) .group-title,
+        #shelf-tags > div:not(:first-child) .group-title { margin-top: 40px; }
+
         #shelf-months > div:first-child .group-title,
         #shelf-authors > div:first-child .group-title,
-        #shelf-tags > div:first-child .group-title {
-            margin-top: 0;
-        }
+        #shelf-tags > div:first-child .group-title { margin-top: 0; }
 
-        /* Goal Section Styles */
-        .goal-container {
-            width: 100%;
-            margin: 0 auto;
-            padding-bottom: 40px;
-        }
-        .goal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        .goal-header h2 {
-            font-size: 18px; font-weight: 700; margin: 0;
-            border-left: 3px solid var(--tg-accent); padding-left: 12px;
-        }
-        
+        /* Goal Section */
+        .goal-container { width: 100%; padding-bottom: 40px; }
         .goal-grid {
-            display: grid;
-            gap: 12px;
-            margin-bottom: 30px;
+            display: grid; gap: 12px; margin-bottom: 30px;
             grid-template-columns: repeat(4, 1fr);
         }
         @media (min-width: 600px) { .goal-grid { grid-template-columns: repeat(8, 1fr); } }
         @media (min-width: 1024px) { .goal-grid { grid-template-columns: repeat(10, 1fr); } }
 
         .goal-slot {
-            aspect-ratio: 2/3;
-            background: #252527;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 600;
-            color: #38383a;
-            position: relative;
-        }
-        .goal-slot.filled {
-            background: var(--tg-sec-bg);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-        }
-        .goal-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .check-badge {
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            width: 22px;
-            height: 22px;
-            background: var(--check-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--tg-bg);
-            z-index: 5;
-            color: #fff;
-        }
-        .check-badge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
-
-        .goal-footer { margin-top: 24px; text-align: center; }
-        .goal-footer-main { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-        .goal-footer-sub { font-size: 13px; color: var(--tg-hint); }
-
-        /* Modal Settings */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
+            aspect-ratio: 4/5; background: var(--tg-sec-bg); border-radius: var(--border-radius-card);
             display: flex; align-items: center; justify-content: center;
-            z-index: 1000;
-            padding: 20px;
+            font-size: 14px; color: var(--tg-hint); position: relative; overflow: hidden;
         }
-        .goal-modal {
-            background: var(--tg-sec-bg);
-            border-radius: 20px;
-            padding: 24px;
-            width: 100%;
-            max-width: 340px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
-        }
-        .goal-modal h3 { margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: var(--tg-text); }
-        .modal-close-x {
-            position: absolute; top: 12px; right: 16px; 
-            font-size: 20px; color: var(--tg-hint); cursor: pointer;
-        }
+        .goal-slot.filled { cursor: pointer; }
+        .goal-slot img { width: 100%; height: 100%; object-fit: cover; }
         
-        .goal-input-box {
-            background: var(--tg-bg);
-            border-radius: 10px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            height: 44px;
-        }
-        .goal-input-box input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            width: 40px;
-            text-align: center;
-            padding: 0;
-            appearance: textfield;
-            -moz-appearance: textfield;
-        }
-        .goal-input-box input::-webkit-outer-spin-button,
-        .goal-input-box input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .goal-input-box span { color: var(--tg-hint); font-size: 14px; }
-        
-        .goal-stepper {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-            padding-left: 8px;
-        }
-        .goal-stepper-btn {
-            background: transparent;
-            border: none;
-            color: #fff;
-            padding: 0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 12px;
-            opacity: 0.6;
-        }
-        .goal-stepper-btn:active { opacity: 1; }
-        .goal-stepper-btn svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+        .goal-footer { margin-top: 32px; text-align: center; }
+        .goal-footer-main { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #fff; font-family: 'Montserrat', sans-serif; }
+        .goal-footer-sub { font-size: 12px; font-weight: 500; color: var(--tg-hint); }
 
-        .goal-modal-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-        .goal-modal-btns.row { flex-direction: row; gap: 12px; }
-        .btn-goal-action {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            text-align: center;
-            transition: opacity 0.2s;
-        }
-        .btn-goal-action:active { opacity: 0.7; }
-        .btn-goal-save { background: var(--tg-accent); color: #fff; }
-        .btn-goal-cancel { background: var(--tg-bg); color: var(--tg-text); }
-        .btn-goal-gray { background: rgba(255,255,255,0.05); color: var(--tg-hint); }
-
-        /* Rating Tab Styles (Restored) */
+        /* Rating Tab Styles */
         .rating-list-container { display: flex; flex-direction: column; gap: 12px; }
         .rating-list-item { 
-            display: flex; gap: 16px; background: var(--tg-sec-bg); 
-            padding: 12px; border-radius: 16px; cursor: pointer;
-            transition: background 0.2s; align-items: center;
+            display: flex; background: var(--tg-sec-bg); 
+            padding: 16px; border-radius: var(--border-radius-card); cursor: pointer;
+            transition: transform 0.2s; align-items: center; gap: 20px; position: relative;
         }
-        .rating-list-item:active { background: rgba(255,255,255,0.05); }
-        .rating-list-img { width: 60px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-        .rating-list-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .rl-title { font-weight: 700; font-size: 15px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        /* Increased vertical spacing by 50% (4px -> 6px) */
-        .rl-author { font-size: 13px; color: var(--tg-hint); margin-bottom: 6px; }
-        .rl-meta { font-size: 11px; color: var(--tg-hint); font-style: italic; }
+        .rating-list-item:active { transform: scale(0.98); }
+        .rating-list-img { width: 72px; aspect-ratio: 2/3; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+        .rating-list-content { flex: 1; display: flex; flex-direction: column; min-width: 0; padding-right: 40px; justify-content: center; }
+        .rl-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; line-height: 1.2; }
+        .rl-author { font-size: 14px; color: var(--tg-text); margin-bottom: 12px; opacity: 0.9; line-height: 1.2; }
+        .rl-meta { font-size: 12px; color: var(--tg-hint); line-height: 1.2; }
         .rl-score-box { 
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
             display: flex; align-items: center; justify-content: center; 
-            width: 36px; height: 36px; border-radius: 50%; color: #fff; font-weight: 800; font-size: 12px;
-            flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 12px;
         }
 
         /* Form Styles */
-        .add-form { display: flex; flex-direction: column; gap: 24px; padding-bottom: 100px; max-width: 600px; margin: 0 auto; }
-        /* Class for main section spacing (2x original gap) */
-        .form-section { margin-bottom: 48px; }
+        .add-form { display: flex; flex-direction: column; gap: 40px; padding-bottom: 100px; max-width: 700px; margin: 0 auto; }
         
-        .form-header { display: flex; gap: 20px; }
+        #note-only-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .form-header-row { 
+            display: flex; gap: 20px; align-items: stretch;
+        }
+        @media (max-width: 500px) { .form-header-row { flex-direction: column; } }
+        
         .cover-upload { 
-            width: 110px; flex-shrink: 0; aspect-ratio: 2/3; border-radius: 10px; 
-            border: 2px dashed var(--tg-hint); 
+            width: 180px; flex-shrink: 0; border-radius: var(--border-radius-card); 
+            background: var(--tg-sec-bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            text-align: center; padding: 10px; font-size: 11px; color: var(--tg-hint); 
-            cursor: pointer; background: rgba(255,255,255,0.03);
+            text-align: center; padding: 10px; color: var(--tg-hint); 
+            cursor: pointer; overflow: hidden;
         }
-        .cover-upload img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .cover-upload span { font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500; }
+        @media (max-width: 500px) { .cover-upload { width: 140px; aspect-ratio: 2/3; margin: 0 auto; } }
+        .cover-upload img { width: 100%; height: 100%; object-fit: cover; }
         
-        .form-inputs { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .form-inputs { flex: 1; display: flex; flex-direction: column; gap: 12px; width: 100%; justify-content: space-between; }
         .form-inputs input { 
-            background: var(--tg-sec-bg); border: none; border-radius: 10px; 
-            padding: 12px; color: var(--tg-text); font-size: 14px; 
+            background: var(--tg-sec-bg); border: none; border-radius: var(--border-radius-input); 
+            padding: 14px 16px; color: var(--tg-text); font-size: 12px; font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
         }
-        .form-inputs input::placeholder { color: var(--tg-hint); }
+        .form-inputs input::placeholder { color: var(--tg-hint); font-weight: 600; }
         
-        .form-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .custom-select-wrapper { position: relative; background: var(--tg-sec-bg); border-radius: 10px; }
+        .form-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .custom-select-wrapper { position: relative; background: var(--tg-sec-bg); border-radius: var(--border-radius-input); }
         .custom-select-wrapper select { 
-            width: 100%; background: transparent; border: none; padding: 12px; 
-            color: var(--tg-text); font-size: 14px; appearance: none;
+            width: 100%; background: transparent; border: none; padding: 14px 16px; 
+            color: var(--tg-text); font-size: 12px; font-weight: 600; appearance: none; cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
         }
         .select-icon { 
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%); 
             pointer-events: none; width: 14px; height: 14px; opacity: 0.5;
         }
 
-        .questions-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .questions-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
         .q-chip { 
-            padding: 8px 14px; background: var(--tg-sec-bg); border-radius: 18px; 
-            font-size: 12px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+            padding: 10px 16px; background: var(--tg-sec-bg); border-radius: 20px; 
+            font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.2s; 
         }
-        .q-chip.selected { background: var(--tg-accent); color: #fff; font-weight: 500; }
+        .q-chip.selected { background: var(--tg-accent); color: #000; font-weight: 600; }
 
+        .custom-q-input-wrap { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;}
+        .custom-q-input-wrap input { background: var(--tg-sec-bg); border: none; padding: 14px; border-radius: var(--border-radius-input); color: #fff; font-size: 13px;}
+        
         .q-item { 
-            background: var(--tg-sec-bg); border-radius: 14px; padding: 16px; 
+            background: var(--tg-sec-bg); border-radius: var(--border-radius-card); padding: 16px; 
             margin-bottom: 16px; position: relative; 
         }
-        .q-item .q-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .q-item label, .custom-q-label-input { 
-            display: block; font-size: 13px; font-weight: 700; 
-            color: var(--tg-hint); font-style: italic;
-        }
-        .custom-q-label-input { 
-            background: transparent; border: none; width: calc(100% - 30px); 
-            padding-bottom: 4px;
-        }
+        .q-item .q-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .q-item label { display: block; font-size: 13px; font-weight: 500; color: var(--tg-hint); }
         .q-item textarea { 
             width: 100%; background: transparent; border: none; 
             border-left: 2px solid var(--tg-accent);
             padding: 4px 0 4px 12px; color: var(--tg-text); 
-            font-size: 15px; resize: none; min-height: 80px; line-height: 1.5; font-weight: 700;
+            font-size: 14px; resize: none; min-height: 60px; line-height: 1.5; font-weight: 500;
+            overflow: hidden;
         }
         .delete-q-btn { 
-            color: var(--tg-accent); width: 16px; height: 16px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            color: var(--tg-accent); width: 18px; height: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; opacity: 0.8;
         }
         .delete-q-btn svg { width: 100%; height: 100%; fill: currentColor; }
 
-        .rating-row { margin-bottom: 16px; }
-        .rating-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--tg-hint); }
+        /* Rating Sliders Improvements */
+        .rating-row { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        /* Увеличили ширину названия критерия, чтобы текст не переносился */
+        .rating-label { font-size: 13px; font-weight: 500; color: var(--tg-hint); width: 220px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rating-slider-container { flex: 1; display: flex; align-items: center; gap: 12px; position: relative; }
         .rating-slider { 
-            width: 100%; -webkit-appearance: none; height: 6px; 
-            background: var(--tg-sec-bg); border-radius: 3px; 
+            width: 100%; -webkit-appearance: none; height: 4px; 
+            background: rgba(255,255,255,0.1); border-radius: 2px; outline: none;
+            background-image: linear-gradient(var(--tg-accent), var(--tg-accent));
+            background-repeat: no-repeat;
         }
         .rating-slider::-webkit-slider-thumb { 
-            -webkit-appearance: none; width: 22px; height: 22px; 
+            -webkit-appearance: none; width: 16px; height: 16px; 
             background: var(--tg-accent); border-radius: 50%; cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .rating-val-display { font-size: 13px; font-weight: 600; width: 16px; text-align: right; }
+
+        @media (max-width: 500px) {
+            .rating-row { flex-direction: column; align-items: stretch; gap: 8px; margin-bottom: 24px;}
+            .rating-label { width: auto; display: flex; justify-content: space-between; white-space: normal; }
+            .rating-val-display { display: none; }
         }
 
-        /* Media Section Edit Mode */
-        .media-edit-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px;
-        }
-        .media-edit-item {
-            aspect-ratio: 1; border-radius: 8px; overflow: hidden; position: relative; background: var(--tg-bg);
-        }
+        /* Media */
+        .media-section { margin-bottom: 40px; }
+        .media-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 16px; }
+        .media-edit-item { aspect-ratio: 1; border-radius: var(--border-radius-input); overflow: hidden; position: relative; background: var(--tg-bg); }
         .media-edit-item img { width: 100%; height: 100%; object-fit: cover; }
         .media-del-btn {
             position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
@@ -442,35 +355,156 @@
             display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer;
         }
 
-        /* View Media Block - Updated Gaps to 10px */
-        .view-media-header {
-            display: flex; justify-content: space-between; align-items: center; margin: 32px 0 16px 0;
+        /* Buttons */
+        .btn-full-width {
+            width: 100%; padding: 14px; border-radius: var(--border-radius-input);
+            font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; border: none;
+            background: var(--tg-sec-bg); color: var(--tg-text); transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
         }
-        .media-mode-switch { display: flex; gap: 8px; }
+        .btn-full-width.accent { background: var(--tg-accent); color: #fff; margin-top: 20px; }
+        .btn-full-width:active { opacity: 0.8; }
+
+        .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: var(--border-radius-input); width: 40px; height: 40px; padding: 0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .btn-mini-action.fill { background: var(--tg-accent); color: #000; }
+        .btn-mini-action svg { width: 18px; height: 18px; fill: currentColor; }
         
-        .media-display-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
-            gap: 10px;
-        }
-        .media-display-carousel {
-            display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
-            padding-bottom: 8px; scrollbar-width: none;
-        }
-        .media-display-carousel::-webkit-scrollbar { display: none; }
+        .icon-btn-settings { background: transparent; border: none; color: var(--tg-hint); cursor: pointer; display: flex; padding: 4px; }
+        .icon-btn-settings svg { width: 24px; height: 24px; fill: currentColor; }
+
+        /* View Mode */
+        .view-note { max-width: 800px; margin: 0 auto; padding-bottom: 60px; }
         
-        .media-item {
-            aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--tg-sec-bg);
-            cursor: pointer; flex-shrink: 0;
+        .view-header-flex { 
+            display: flex; gap: 24px; align-items: stretch;
+            margin-bottom: 40px; 
         }
-        .media-display-carousel .media-item { width: 150px; scroll-snap-align: start; }
+        .view-cover-fixed { width: 160px; flex-shrink: 0; position: relative; }
+        
+        .view-info-column {
+            display: flex; flex-direction: column; flex: 1; min-width: 0;
+        }
+        .view-text-info {
+            display: flex; flex-direction: column; gap: 16px; 
+        }
+        .view-text-info h1 { font-size: 22px; margin: 0; font-weight: 700; line-height: 1.2; word-break: break-word; }
+        .view-text-info h2 { font-size: 15px; color: var(--tg-text); margin: 0; font-weight: 600; line-height: 1.2; word-break: break-word; }
+        .view-genre, .view-date { font-size: 13px; color: var(--tg-hint); line-height: 1.2; }
+        
+        .view-tags-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .view-tag { font-size: 12px; background: var(--tg-sec-bg); padding: 6px 12px; border-radius: 16px; color: var(--tg-hint); font-weight: 500; }
+        
+        .view-actions-row { 
+            display: flex; gap: 12px; 
+            margin-top: auto; 
+        }
+
+        @media (max-width: 500px) {
+            .view-header-flex { flex-direction: column; align-items: center; text-align: center; }
+            .view-cover-fixed { width: 140px; }
+            .view-text-info { gap: 12px; align-items: center; }
+            .view-actions-row { margin-top: 24px; justify-content: center; }
+        }
+
+        .note-qa { margin-bottom: 40px; } 
+        .note-qa-item { margin-bottom: 24px; }
+        .note-qa-item:last-child { margin-bottom: 0; }
+        .note-qa-item .q { font-size: 13px; color: var(--tg-hint); font-style: italic; display: block; margin-bottom: 6px; }
+        .note-qa-item .a { font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: #fff; font-weight: 400; }
+
+        .view-detailed-ratings { background: var(--tg-sec-bg); border-radius: var(--border-radius-card); padding: 24px; margin-top: 0; }
+        .view-rating-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; font-weight: 500;}
+        .view-rating-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .rating-badge-score { font-weight: 700; color: var(--tg-text); }
+
+        /* Media Display Grid */
+        .media-display-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 16px; }
+        .media-item { aspect-ratio: 1; border-radius: var(--border-radius-input); overflow: hidden; cursor: pointer; background: var(--tg-sec-bg);}
         .media-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Lightbox */
-        .lightbox {
+        /* Cards (Картотека - Автономный Zettelkasten) */
+        .cards-container { display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px; }
+        .thought-card { background: var(--tg-sec-bg); border-radius: var(--border-radius-card); padding: 24px; position: relative; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: box-shadow 0.3s;}
+        .thought-card-header { display: flex; justify-content: space-between; align-items: center; color: var(--tg-hint); font-size: 13px; font-weight: 500; }
+        .thought-card-num { font-family: monospace; letter-spacing: 1px; opacity: 0.7; }
+        .thought-card-arrow { cursor: pointer; color: var(--tg-text); opacity: 0.8; transition: 0.2s; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%;}
+        .thought-card-arrow:hover { opacity: 1; color: var(--tg-accent); background: rgba(140, 209, 54, 0.1); }
+        .thought-card-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .thought-card-content { display: flex; flex-direction: column; gap: 8px; }
+        .thought-card-q { font-size: 13px; color: var(--tg-hint); font-style: italic; }
+        .thought-card-a { font-size: 15px; line-height: 1.6; color: var(--tg-text); font-weight: 400; white-space: pre-wrap; }
+        
+        .zk-smart-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 16px;}
+        .zk-smart-links-title { font-size: 12px; color: var(--tg-hint); margin-right: 4px; display: flex; align-items: center; gap: 4px; }
+        .zk-smart-links-title svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;}
+        .zk-link-badge { background: transparent; color: var(--tg-text); padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: monospace; transition: 0.2s; opacity: 0.8;}
+        .zk-link-badge:hover { background: rgba(140, 209, 54, 0.1); color: var(--tg-accent); opacity: 1; }
+
+        .thought-card-footer { display: flex; gap: 16px; margin-top: 4px; font-size: 13px; color: var(--tg-hint); }
+        .thought-card-title { font-style: italic; font-weight: 600; color: #ccc;}
+        .thought-card-author { font-weight: 500; opacity: 0.8; }
+        
+        /* Highlight words found in search */
+        .zk-highlight { color: var(--tg-accent); font-weight: 600; }
+
+        /* Modals */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95); z-index: 2000;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+        }
+        .goal-modal {
+            background: var(--tg-sec-bg); border-radius: 16px; padding: 24px;
+            width: 100%; max-width: 532px; height: 218px; 
+            display: flex; flex-direction: column; justify-content: center;
+            text-align: center; position: relative;
+        }
+        .goal-modal h3 { margin: 0 0 16px 0; font-size: 16px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #fff; }
+        
+        .goal-input-box {
+            background: var(--tg-bg); border-radius: var(--border-radius-input); padding: 0 16px;
+            display: flex; align-items: center; justify-content: center; height: 44px; 
+            margin: 0 auto 16px auto; 
+            position: relative; width: 311px;
+        }
+        .goal-input-content {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .goal-input-box input {
+            background: transparent; border: none; color: #fff; font-size: 12px; font-weight: 600;
+            width: 24px; text-align: center; padding: 0; appearance: textfield; -moz-appearance: textfield;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .goal-input-box input::-webkit-outer-spin-button, .goal-input-box input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .goal-input-box span { color: #fff; font-size: 12px; font-weight: 600; }
+        
+        .goal-stepper {
+            position: absolute; right: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; height: 100%;
+        }
+        .goal-stepper button {
+            background: transparent; border: none; color: var(--tg-hint); padding: 2px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .goal-stepper button:hover { color: #fff; }
+        .goal-stepper svg { width: 14px; height: 14px; stroke-width: 2.5; }
+
+        .goal-modal-btns { display: flex; gap: 12px; justify-content: center; }
+        .goal-modal-btns.row { flex-direction: row; gap: 12px; }
+        .goal-modal-btns .btn-full-width { 
+            font-size: 12px; font-weight: 600; height: 44px; display: flex; align-items: center; justify-content: center; margin-top: 0; 
+            width: 150px; flex-shrink: 0; padding: 0;
+        }
+        
+        .btn-secondary { background: #38383A; color: var(--tg-text); }
+        .modal-close-x {
+            position: absolute; top: 16px; right: 16px; 
+            color: var(--tg-hint); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            padding: 20px;
+        }
+        
+        .lightbox {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
         .lightbox-close {
@@ -478,66 +512,6 @@
             background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-
-        .btn-base {
-            padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 700; 
-            cursor: pointer; text-align: center; border: none;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .save-btn { background: var(--tg-accent); color: #fff; width: 100%; margin-top: 20px; padding: 14px; }
-        
-        .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: 10px; width: 44px; height: 44px; padding: 0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-mini-action.fill { background: var(--tg-accent); color: #fff; }
-        .btn-mini-action svg { width: 20px; height: 20px; fill: currentColor; }
-
-        .view-note { max-width: 800px; margin: 0 auto; padding-bottom: 60px; }
-        .view-header-flex { 
-            display: flex; gap: 24px; margin-bottom: 24px; 
-            padding-bottom: 24px; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); 
-        }
-        .view-cover-fixed { width: 140px; flex-shrink: 0; position: relative; }
-        .view-info-text h1 { font-size: 22px; margin: 0 0 8px 0; }
-        .view-info-text h2 { font-size: 16px; color: var(--tg-text); margin: 0 0 4px 0; font-weight: 500; }
-        .view-genre { color: var(--tg-hint) !important; font-weight: 400 !important; font-size: 16px; margin-bottom: 4px; }
-        .view-month { font-size: 16px; color: var(--tg-hint); display: inline-block; }
-        .view-year { font-size: 12px; color: var(--tg-hint); font-style: italic; display: inline-block; margin-left: 4px; }
-        .view-tag { font-size: 11px; background: var(--tg-sec-bg); padding: 4px 8px; border-radius: 6px; color: var(--tg-hint); }
-        .view-tags-container { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-
-        .view-actions-side { display: flex; gap: 12px; margin-bottom: 32px; align-items: center; }
-
-        .note-qa-item { margin-bottom: 24px; }
-        .note-qa-item .q { 
-            font-size: 13px; color: var(--tg-hint); font-style: italic; 
-            display: block; margin-bottom: 6px; 
-        }
-        .note-qa-item .a { 
-            font-size: 16px; line-height: 1.5; white-space: pre-wrap; color: #fff; font-weight: 700;
-            border-left: 2px solid var(--tg-accent); padding-left: 12px;
-        }
-
-        .view-detailed-ratings { margin-top: 40px; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; }
-        .view-rating-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
-        .view-rating-item:last-child { border-bottom: none; }
-        .rating-badge-score { font-weight: 700; color: var(--tg-accent); }
-
-        @media (max-width: 600px) {
-            .view-header-flex { flex-direction: column; align-items: center; text-align: center; }
-            .view-actions-side { justify-content: center; }
-            .view-tags-container { justify-content: center; }
-        }
-
-        .pdf-export-mode { background: #fff !important; color: #000 !important; }
-        .pdf-export-mode #note-details { padding: 40px !important; color: #000 !important; }
-        .pdf-export-mode .view-actions-side { display: none !important; }
-        .pdf-export-mode .note-qa-item { border-bottom: 1px solid #eee; padding-bottom: 12px; }
-        .pdf-export-mode .q, .pdf-export-mode .a, .pdf-export-mode .view-rating-item { font-size: 14px !important; }
-        .pdf-export-mode .q { color: #888 !important; }
-        .pdf-export-mode .a { color: #000 !important; border-left-color: #5a8c20 !important; }
-        .pdf-export-mode .view-info-text h1, .pdf-export-mode .view-info-text h2 { color: #000 !important; }
-        .pdf-export-mode .view-genre { color: #999 !important; }
-        .pdf-export-mode .view-tag { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #eee; }
-        .pdf-export-mode .view-detailed-ratings { background: #f5f5f5 !important; border: 1px solid #eee; color: #000 !important; padding: 20px !important; border-radius: 12px !important; }
     </style>
 </head>
 <body>
@@ -545,19 +519,33 @@
     <div class="app-container">
         <div class="top-nav" id="main-nav">
             <div class="nav-items-wrapper" id="nav-tabs">
-                <div class="nav-item active" data-tab="all" onclick="window.switchTab('all')">Все</div>
-                <div class="nav-item" data-tab="rating" onclick="window.switchTab('rating')">Рейтинг</div>
-                <div class="nav-item" data-tab="months" onclick="window.switchTab('months')">Месяцы</div>
-                <div class="nav-item" data-tab="authors" onclick="window.switchTab('authors')">Авторы</div>
-                <div class="nav-item" data-tab="tags" onclick="window.switchTab('tags')">Хэштеги</div>
-                <div class="nav-item" data-tab="goal" onclick="window.switchTab('goal')">Цель</div>
-                <div class="nav-item" data-tab="deferred" onclick="window.switchTab('deferred')">Отложенные</div>
+                <div class="nav-item active" data-tab="all" onclick="window.switchTab('all')" data-i18n="navAll">Все книги</div>
+                <div class="nav-item" data-tab="rating" onclick="window.switchTab('rating')" data-i18n="navRating">Рейтинг</div>
+                <div class="nav-item" data-tab="months" onclick="window.switchTab('months')" data-i18n="navMonths">Месяцы</div>
+                <div class="nav-item" data-tab="authors" onclick="window.switchTab('authors')" data-i18n="navAuthors">Авторы</div>
+                <div class="nav-item" data-tab="tags" onclick="window.switchTab('tags')" data-i18n="navTags">Хэштеги</div>
+                <div class="nav-item" data-tab="cards" onclick="window.switchTab('cards')" data-i18n="navCards">Картотека</div>
+                <div class="nav-item" data-tab="goal" onclick="window.switchTab('goal')" data-i18n="navGoal">Цели</div>
+                <div class="nav-item" data-tab="deferred" onclick="window.switchTab('deferred')" data-i18n="navDeferred">Wishlist</div>
             </div>
+            
             <button class="btn-add-top" id="btn-add-global" onclick="window.openAddForm()">+ Книга</button>
+
+            <!-- Выпадашка переключения языка -->
+            <div class="lang-dropdown-container" id="lang-dropdown">
+                <button class="nav-item" id="btn-lang-toggle" onclick="window.toggleLangMenu(event)">RUS</button>
+                <div class="lang-menu hidden" id="lang-menu">
+                    <div class="lang-menu-item" onclick="window.setLanguage('ru')">RUS</div>
+                    <div class="lang-menu-item" onclick="window.setLanguage('en')">ENG</div>
+                    <div class="lang-menu-item" onclick="window.setLanguage('es')">SPA</div>
+                </div>
+            </div>
         </div>
 
         <div class="search-container" id="search-bar-container">
-            <input type="text" class="search-input" id="shelf-search" placeholder="Поиск по названию или автору..." oninput="window.renderCurrentTab()">
+            <input type="text" class="search-input" id="shelf-search" data-i18n-placeholder="searchPlaceholder" placeholder="Поиск по названию или автору..." oninput="window.renderCurrentTab()">
+            <!-- Автоматическое облако тем (Zettelkasten) -->
+            <div id="zk-themes-container" class="zk-themes-cloud hidden"></div>
         </div>
 
         <div id="app">
@@ -577,12 +565,16 @@
                 <div id="shelf-tags"></div>
             </div>
 
+            <div id="tab-cards" class="section hidden">
+                <div class="cards-container" id="cards-list"></div>
+            </div>
+
             <div id="tab-goal" class="section hidden">
                 <div class="goal-container">
-                    <div class="goal-header">
-                        <h2>Книг за этот год</h2>
-                        <button class="btn-mini-action" onclick="window.openGoalModal()">
-                            <svg id="fi_2099058" enable-background="new 0 0 512 512" height="512" viewBox="0 0 512 512" width="512" xmlns="http://www.w3.org/2000/svg"><path d="m272.066 512h-32.133c-25.989 0-47.134-21.144-47.134-47.133v-10.871c-11.049-3.53-21.784-7.986-32.097-13.323l-7.704 7.704c-18.659 18.682-48.548 18.134-66.665-.007l-22.711-22.71c-18.149-18.129-18.671-48.008.006-66.665l7.698-7.698c-5.337-10.313-9.792-21.046-13.323-32.097h-10.87c-25.988 0-47.133-21.144-47.133-47.133v-32.134c0-25.989 21.145-47.133 47.134-47.133h10.87c3.531-11.05 7.986-21.784 13.323-32.097l-7.704-7.703c-18.666-18.646-18.151-48.528.006-66.665l22.713-22.712c18.159-18.184 48.041-18.638 66.664.006l7.697 7.697c10.313-5.336 21.048-9.792 32.097-13.323v-10.87c0-25.989 21.144-47.133 47.134-47.133h32.133c25.989 0 47.133 21.144 47.133 47.133v10.871c11.049 3.53 21.784 7.986 32.097 13.323l7.704-7.704c18.659-18.682 48.548-18.134 66.665.007l22.711 22.71c18.149 18.129 18.671 48.008-.006 66.665l-7.698 7.698c5.337 10.313 9.792 21.046 13.323 32.097h10.87c25.989 0 47.134 21.144 47.134 47.133v32.134c0 25.989-21.145 47.133-47.134 47.133h-10.87c-3.531 11.05-7.986 21.784-13.323 32.097l7.704 7.704c18.666 18.646 18.151 48.528-.006 66.665l-22.713 22.712c-18.159 18.184-48.041 18.638-66.664-.006l-7.697-7.697c-10.313 5.336-21.048-9.792-32.097 13.323v10.871c0 25.987-21.144 47.131-47.134 47.131zm-106.349-102.83c14.327 8.473 29.747 14.874 45.831 19.025 6.624 1.709 11.252 7.683 11.252 14.524v22.148c0 9.447 7.687 17.133 17.134 17.133h32.133c9.447 0 17.134-7.686 17.134-17.133v-22.148c0-6.841 4.628-12.815 11.252-14.524 16.084-4.151 31.504-10.552 45.831-19.025 5.895-3.486 13.4-2.538 18.243 2.305l15.688 15.689c6.764 6.772 17.626 6.615 24.224.007l22.727-22.726c6.582-6.574 6.802-17.438.006-24.225l-15.695-15.695c-4.842-4.842-5.79-12.348-2.305-18.242 8.473-14.326 14.873-29.746 19.024-45.831 1.71-6.624 7.684-11.251 14.524-11.251h22.147c9.447 0 17.134-7.686 17.134-17.133v-32.134c0-9.447-7.687-17.133-17.134-17.133h-22.147c-6.841 0-12.814-4.628-14.524-11.251-4.151-16.085-10.552-31.505-19.024-45.831-3.485-5.894-2.537-13.4 2.305-18.242l15.689-15.689c6.782-6.774 6.605-17.634.006-24.225l-22.725-22.725c-6.587-6.596-17.451-6.789-24.225-.006l-15.694 15.695c-4.842 4.843-12.35 5.791-18.243 2.305-14.327-8.473-29.747-14.874-45.831-19.025-6.624-1.709-11.252-7.683-11.252-14.524v-22.15c0-9.447-7.687-17.133-17.134-17.133h-32.133c-9.447 0-17.134 7.686-17.134 17.133v22.148c0 6.841-4.628 12.815-11.252 14.524-16.084 4.151-31.504 10.552-45.831 19.025-5.896 3.485-13.401 2.537-18.243-2.305l-15.688-15.689c-6.764-6.772-17.627-6.615-24.224-.007l-22.727 22.726c-6.582 6.574-6.802 17.437-.006 24.225l15.695 15.695c4.842 4.842 5.79 12.348 2.305 18.242-8.473 14.326-14.873 29.746-19.024 45.831-1.71 6.624-7.684 11.251-14.524 11.251h-22.148c-9.447.001-17.134 7.687-17.134 17.134v32.134c0 9.447 7.687 17.133 17.134 17.133h22.147c6.841 0 12.814 4.628 14.524 11.251 4.151 16.085 10.552 31.505 19.024 45.831 3.485 5.894 2.537 13.4-2.305 18.242l-15.689 15.689c-6.782 6.774-6.605 17.634-.006 24.225l22.725 22.725c6.587 6.596 17.451 6.789 24.225.006l15.694-15.695c3.568-3.567 10.991-6.594 18.244-2.304z"></path><path d="m256 367.4c-61.427 0-111.4-49.974-111.4-111.4s49.973-111.4 111.4-111.4 111.4 49.974 111.4 111.4-49.973 111.4-111.4 111.4zm0-192.8c-44.885 0-81.4 36.516-81.4 81.4s36.516 81.4 81.4 81.4 81.4-36.516 81.4-81.4-36.515-81.4-81.4-81.4z"></path></svg>
+                    <div class="group-title flex-between" style="margin-top: 0;">
+                        <span data-i18n="goalTitle">Цель чтения на год</span>
+                        <button class="icon-btn-settings" onclick="window.openGoalModal()">
+                            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                         </button>
                     </div>
                     <div class="goal-grid" id="goal-grid-container"></div>
@@ -596,57 +588,58 @@
 
             <div id="tab-add" class="section hidden">
                 <div class="add-form">
-                    <div class="form-header">
+                    <div class="form-header-row">
                         <input type="file" id="cover-input" hidden accept="image/*" onchange="window.previewImage(this)">
                         <div class="cover-upload" onclick="document.getElementById('cover-input').click()" id="cover-preview-container">
-                            <span>+<br>Обложка</span>
+                            <span style="font-size: 24px; margin-bottom: 8px; font-weight: 300;">+</span>
+                            <span data-i18n="addCover">Добавить обложку</span>
                         </div>
                         <div class="form-inputs">
-                            <input type="text" id="f-title" placeholder="Название книги">
-                            <input type="text" id="f-author" placeholder="Автор (через запятую)">
-                            <input type="text" id="f-genre" placeholder="Жанр">
-                            <input type="text" id="f-tags" placeholder="Хэштеги (через запятую)">
+                            <input type="text" id="f-title" data-i18n-placeholder="inputTitle" placeholder="Название книги">
+                            <input type="text" id="f-author" data-i18n-placeholder="inputAuthor" placeholder="Автор (через запятую)">
+                            <input type="text" id="f-genre" data-i18n-placeholder="inputGenre" placeholder="Жанр">
+                            <input type="text" id="f-tags" data-i18n-placeholder="inputTags" placeholder="Хэштеги (через запятую)">
                             <div class="form-date-row" id="note-date-row">
                                 <div class="custom-select-wrapper">
-                                    <select id="f-month">
-                                        <option>Январь</option><option>Февраль</option><option>Март</option>
-                                        <option>Апрель</option><option>Май</option><option>Июнь</option>
-                                        <option>Июль</option><option>Август</option><option>Сентябрь</option>
-                                        <option>Октябрь</option><option>Ноябрь</option><option>Декабрь</option>
-                                    </select>
-                                    <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    <select id="f-month"></select>
+                                    <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </div>
                                 <div class="custom-select-wrapper">
                                     <select id="f-year"></select>
-                                    <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </div>
                             </div>
-                            <input type="text" id="f-source" placeholder="Ссылка на источник" class="hidden">
+                            <input type="text" id="f-source" data-i18n-placeholder="inputSource" placeholder="Ссылка на источник" class="hidden">
                         </div>
                     </div>
                     
                     <div id="note-only-fields">
                         <div class="form-section">
-                            <div class="group-title">Заметки и мысли</div>
+                            <div class="group-title" data-i18n="notesTitle">Заметки и мысли</div>
                             <div class="questions-cloud" id="q-cloud"></div>
+                            
+                            <div class="custom-q-input-wrap">
+                                <input type="text" id="custom-q-input" data-i18n-placeholder="inputCustomQ" placeholder="Введите свой вопрос">
+                                <button class="btn-full-width" onclick="window.addCustomQuestionFromInput()" data-i18n="btnCustomQ">+ Свой вопрос</button>
+                            </div>
+
                             <div id="selected-questions"></div>
-                            <button class="btn-base btn-mini-action" style="width:100%; border-radius:12px; height:auto; padding:12px;" onclick="window.addCustomQuestion()">+ Свой вопрос</button>
                         </div>
 
                         <div class="form-section">
-                            <div class="group-title">Медиа</div>
+                            <div class="group-title" data-i18n="mediaTitle">Медиа</div>
                             <input type="file" id="media-input" hidden accept="image/*" multiple onchange="window.handleMediaUpload(this)">
-                            <button class="btn-base btn-mini-action" style="width:100%; border-radius:12px; height:auto; padding:12px;" onclick="document.getElementById('media-input').click()">Добавить фотографии</button>
+                            <button class="btn-full-width" onclick="document.getElementById('media-input').click()" data-i18n="btnAddPhotos">Добавить фотографии</button>
                             <div class="media-edit-grid" id="media-edit-container"></div>
                         </div>
 
                         <div class="form-section">
-                            <div class="group-title">Рейтинг</div>
+                            <div class="group-title" data-i18n="ratingTitle">Рейтинг</div>
                             <div id="ratings-list"></div>
                         </div>
                     </div>
 
-                    <button class="btn-base save-btn" id="btn-save-main" onclick="window.saveBook()">СОХРАНИТЬ</button>
+                    <button class="btn-full-width accent" id="btn-save-main" onclick="window.saveBook()"></button>
                 </div>
             </div>
 
@@ -657,30 +650,15 @@
 
         <div id="goal-modal-overlay" class="modal-overlay hidden" onclick="window.closeGoalModal()">
             <div class="goal-modal" onclick="event.stopPropagation()">
-                <div class="modal-close-x" onclick="window.closeGoalModal()">✕</div>
-                <h3 id="modal-title">Годовая цель по чтению</h3>
-                <div id="modal-content">
-                    <div class="goal-input-box">
-                        <input type="number" id="goal-input-value" value="20" min="1">
-                        <span>книг в год</span>
-                        <div class="goal-stepper">
-                            <button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepUp()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                            </button>
-                            <button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepDown()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                        </div>
-                    </div>
+                <div class="modal-close-x" onclick="window.closeGoalModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
                 </div>
-                <div class="goal-modal-btns row" id="modal-btns">
-                    <button class="btn-goal-action btn-goal-cancel" onclick="window.closeGoalModal()">Отменить</button>
-                    <button class="btn-goal-action btn-goal-save" onclick="window.saveGoalSettings()">OK</button>
-                </div>
+                <h3 id="modal-title"></h3>
+                <div id="modal-content"></div>
+                <div class="goal-modal-btns row" id="modal-btns"></div>
             </div>
         </div>
         
-        <!-- Lightbox -->
         <div id="lightbox" class="lightbox hidden" onclick="this.classList.add('hidden')">
             <div class="lightbox-close">✕</div>
             <img id="lightbox-img" src="" onclick="event.stopPropagation()">
@@ -688,27 +666,176 @@
     </div>
 
     <script>
-        const iconEdit = `<svg viewBox="0 0 512 511" xmlns="http://www.w3.org/2000/svg"><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"></path><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"></path><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"></path></svg>`;
-        const iconPdf = `<svg enable-background="new 0 0 515.283 515.283" viewBox="0 0 515.283 515.283" xmlns="http://www.w3.org/2000/svg"><path d="m400.775 515.283h-286.268c-30.584 0-59.339-11.911-80.968-33.54-21.628-21.626-33.539-50.382-33.539-80.968v-28.628c0-15.811 12.816-28.628 28.627-28.628s28.627 12.817 28.627 28.628v28.628c0 15.293 5.956 29.67 16.768 40.483 10.815 10.814 25.192 16.771 40.485 16.771h286.268c15.292 0 29.669-5.957 40.483-16.771 10.814-10.815 16.771-25.192 16.771-40.483v-28.628c0-15.811 12.816-28.628 28.626-28.628s28.628 12.817 28.628 28.628v28.628c0 30.584-11.911 59.338-33.54 80.968-21.629 21.629-50.384 33.54-80.968 33.54zm-143.134-114.509c-3.96 0-7.73-.804-11.16-2.257-3.2-1.352-6.207-3.316-8.838-5.885-.001-.001-.001-.002-.002-.002-.019-.018-.038-.037-.057-.056-.005-.004-.011-.011-.016-.016-.016-.014-.03-.029-.045-.044-.01-.01-.019-.018-.029-.029-.01-.01-.023-.023-.032-.031-.02-.02-.042-.042-.062-.062l-114.508-114.509c-11.179-11.179-11.179-29.305 0-40.485 11.179-11.179 29.306-11.18 40.485 0l65.638 65.638v-274.409c-.001-15.811 12.815-28.627 28.626-28.627s28.628 12.816 28.628 28.627v274.408l65.637-65.637c11.178-11.179 29.307-11.179 40.485 0 11.179 11.179 11.179 29.306 0 40.485l-114.508 114.507c-.02.02-.042.042-.062.062-.011.01-.023.023-.032.031-.01.011-.019.019-.029.029-.014.016-.03.03-.044.044-.005.005-.012.012-.017.016-.018.019-.037.038-.056.056-.001 0-.001.001-.002.002-.315.307-.634.605-.96.895-2.397 2.138-5.067 3.805-7.89 4.995-.01.004-.018.008-.028.012-.011.004-.02.01-.031.013-3.412 1.437-7.158 2.229-11.091 2.229z" fill="currentColor"></path></svg>`;
-        const iconTrash = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><g><path d="M62.205,150l26.569,320.735C90.678,493.865,110.38,512,133.598,512h244.805c23.218,0,42.92-18.135,44.824-41.265 L449.795,150H62.205z M180.986,452c-7.852,0-14.458-6.108-14.956-14.063l-15-242c-0.513-8.276,5.771-15.395,14.033-15.908 c8.569-0.601,15.381,5.757,15.908,14.033l15,242C196.502,444.632,189.721,452,180.986,452z M271,437c0,8.291-6.709,15-15,15 c-8.291,0-15-6.709-15-15V195c0-8.291,6.709-15,15-15s15,6.709,15,15V437z M360.97,195.938l-15,242 c-0.493,7.874-7.056,14.436-15.908,14.033c-8.262-0.513-14.546-7.632-14.033-15.908l15-242 c0.513-8.276,7.764-14.297,15.908-14.033C355.199,180.543,361.483,187.662,360.97,195.938z"></path></g><g><path d="M451,60h-90V45c0-24.814-20.186-45-45-45H196c-24.814,0-45,20.186-45,45v15H61c-16.569,0-30,13.431-30,30 c0,16.567,13.431,30,30,30c137.966,0,252.039,0,390,0c16.569,0,30-13.433,30-30C481,73.431,467.569,60,451,60z M331,60H181V45 c0-8.276,6.724-15,15-15h120c8.276,0,15,6.724,15,15V60z"></path></g></svg>`;
-        const iconCheck = `<svg viewBox="0 0 134 134" xmlns="http://www.w3.org/2000/svg" id="fi_8385833"><path d="m17.571 70.766 32.913 32.913c2.034 2.034 5.332 2.034 7.366 0l62.079-62.079c2.032-2.033 2.032-5.334 0-7.366-2.033-2.033-5.333-2.033-7.366 0l-58.396 58.396s-29.23-29.23-29.23-29.23c-2.033-2.032-5.333-2.032-7.366 0-2.032 2.033-2.032 5.334 0 7.366z" fill="currentColor"></path></svg>`;
-        const iconLink = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 32 32"><path d="M2,31H1.962A1,1,0,0,1,1,30.1C.967,29.74.128,21.118,5.433,15.226,8.375,11.957,12.6,10.208,18,10.018V6a1,1,0,0,1,1.673-.74l11,10a1,1,0,0,1,0,1.48l-11,10A1,1,0,0,1,18,26V21.907c-3.116-.227-13.453-.322-15.016,8.272A1,1,0,0,1,2,31ZM20,8.261V11a1,1,0,0,1-1,1c-5.29,0-9.354,1.535-12.081,4.564a16.165,16.165,0,0,0-3.678,8.243c4.975-6.16,15.759-4.818,15.891-4.8A1,1,0,0,1,20,21v2.739L28.513,16Z"></path></svg>`;
-        
-        /* Updated Grid & Carousel Icons */
-        const iconGrid = `<svg id="fi_10437031" enable-background="new 0 0 100 100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><g><path d="m89.5 83.333h-79c-5.79 0-10.5-4.71-10.5-10.5v-45.666c0-5.79 4.71-10.5 10.5-10.5h79c5.79 0 10.5 4.71 10.5 10.5v45.667c0 5.789-4.71 10.499-10.5 10.499zm-79-61.666c-3.033 0-5.5 2.467-5.5 5.5v45.667c0 3.032 2.467 5.5 5.5 5.5h79c3.032 0 5.5-2.468 5.5-5.5v-45.667c0-3.033-2.468-5.5-5.5-5.5z"></path><g><path d="m26.333 64.333h-10.333c-1.381 0-2.5-1.119-2.5-2.5s1.119-2.5 2.5-2.5h10.333c1.381 0 2.5 1.119 2.5 2.5s-1.119 2.5-2.5 2.5z"></path><path d="m45.556 64.333h-10.334c-1.381 0-2.5-1.119-2.5-2.5s1.119-2.5 2.5-2.5h10.333c1.381 0 2.5 1.119 2.5 2.5s-1.118 2.5-2.499 2.5z"></path><path d="m64.777 64.333h-10.333c-1.381 0-2.5-1.119-2.5-2.5s1.119-2.5 2.5-2.5h10.333c1.381 0 2.5 1.119 2.5 2.5s-1.119 2.5-2.5 2.5z"></path><path d="m84 64.333h-10.333c-1.381 0-2.5-1.119-2.5-2.5s1.119-2.5 2.5-2.5h10.333c1.381 0 2.5 1.119 2.5 2.5s-1.119 2.5-2.5 2.5z"></path></g></g></svg>`;
-        const iconCarousel = `<svg fill="currentColor" height="512" viewBox="0 0 24 24" width="512" xmlns="http://www.w3.org/2000/svg" id="fi_10387094"><g><path d="m13 22.75h-2c-3.3 0-5.29-.66-5.66-4.01-.06-.45-.09-.99-.09-1.74v-10c0-.75.03-1.29.1-1.77.36-3.32 2.35-3.98 5.65-3.98h2c3.3 0 5.29.66 5.66 4.01.06.45.09.99.09 1.74v10c0 .75-.03 1.29-.1 1.77-.36 3.32-2.35 3.98-5.65 3.98zm-2-20c-3.31 0-3.94.67-4.16 2.67-.06.43-.09.9-.09 1.58v10c0 .68.03 1.15.08 1.55.22 2.03.86 2.7 4.17 2.7h2c3.31 0 3.94-.67 4.16-2.67.06-.42.09-.9.09-1.58v-10c0-.67-.03-1.15-.08-1.55-.22-2.03-.86-2.7-4.17-2.7z"></path><path d="m5.67 19.4201h-.34c-3.09 0-4.08-.99-4.08-4.09v-6.66002c0-3.1.99-4.09 4.08-4.09h.34c.17 0 .31 0 .47.01.21.01.4.11.53.28s.19.37.16.58c-.05.4-.08.87-.08 1.55v10.00002c0 .68.03 1.15.08 1.55.03.21-.03.42-.16.58s-.32.26-.53.28c-.16.01-.3-.01-.47.01zm-.4-13.34002c-2.19.01-2.52.36-2.52 2.59v6.66002c0 2.23.33 2.58 2.52 2.59-.01-.27-.02-.57-.02-.92v-10.00002c0-.35.01-.65.02-.92z"></path><path d="m18.6697 19.4201h-.34c-.17 0-.31 0-.47-.01-.21-.01-.4-.11-.53-.28-.13-.16-.19-.37-.16-.58.06-.4.08-.88.08-1.55v-10.00002c0-.67-.03-1.15-.08-1.55-.03-.21.03-.42.16-.58s.32-.26.53-.28c.16-.01.3-.01.47-.01h.34c3.09 0 4.08.99 4.08 4.09v6.66002c0 3.1-.99 4.09-4.08 4.09zm.06-13.34002c.01.27.02.57.02.92v10.00002c0 .35-.01.65-.02.92 2.19-.01 2.52-.36 2.52-2.59v-6.66002c0-2.23-.33-2.58-2.52-2.59z"></path></g></svg>`;
+        const iconEdit = `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+        const iconPdf = `<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+        const iconTrash = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+        const iconCheck = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+        const iconLink = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>`;
 
-        const questionsPool = ["О чём эта книга в целом?", "Какие темы и идеи ключевые?", "Что показалось самым сильным?", "Главные персонажи и их роль?", "Какие сцены запомнились?", "Какие эмоции книга вызвала?", "Что вызвало несогласие?", "Какую мысль я уношу с собой?", "Кому бы я порекомендовал?"];
-        const ratingCriteria = ["Сюжет и интрига", "Персонажи и их развитие", "Стиль и язык", "Эмоциональное воздействие", "Оригинальность", "Темп и динамика", "Атмосфера и мир", "Польза и познавательность", "Перечитываемость", "Концовка"];
-        const monthIndices = { 'Январь': 0, 'Февраль': 1, 'Март': 2, 'Апрель': 3, 'Май': 4, 'Июнь': 5, 'Июль': 6, 'Август': 7, 'Сентябрь': 8, 'Октябрь': 9, 'Ноябрь': 10, 'Декабрь': 11 };
+        const translations = {
+            ru: {
+                navAll: "Все книги", navRating: "Рейтинг", navMonths: "Месяцы", navAuthors: "Авторы",
+                navTags: "Хэштеги", navCards: "Картотека", navGoal: "Цели", navDeferred: "Wishlist", btnAddBook: "+ Книга",
+                btnBack: "Назад", searchPlaceholder: "Поиск по названию или автору...", searchCardsPlaceholder: "Поиск по мыслям и темам...",
+                addBookCard: "Добавить книгу", planBookCard: "Запланируйте книгу",
+                goalTitle: "Цель чтения на год", booksToGoal: "до цели!", keepReading: "Продолжайте читать",
+                goalReached: "Цель достигнута! 🎉", youRead: "Вы прочитали", inThisYear: "в этом году.",
+                addCover: "Добавить обложку", inputTitle: "Название книги", inputAuthor: "Автор (через запятую)",
+                inputGenre: "Жанр", inputTags: "Хэштеги (через запятую)", inputSource: "Ссылка на источник",
+                notesTitle: "Заметки и мысли", inputCustomQ: "Введите свой вопрос", btnCustomQ: "+ Свой вопрос",
+                mediaTitle: "Медиа", btnAddPhotos: "Добавить фотографии", ratingTitle: "Рейтинг",
+                btnSaveNotes: "Сохранить конспект", btnPlanBook: "Запланировать книгу",
+                modalGoalTitle: "Годовая цель по чтению", booksPerYear: "книг в год", btnCancel: "Отменить",
+                btnSave: "Сохранить", modalReadTitle: "Вы уже прочитали книгу?", modalReadSub: "Хотите составить конспект?",
+                btnNo: "Нет", btnYes: "Да", noNotes: "Нет заметок", noCards: "Картотека пуста. Сохраняйте подробные ответы (более 20 символов), и система сама найдет связи между ними.", alertEmptyTitle: "Пожалуйста, введите название книги",
+                unknownAuthor: "Неизвестный автор", notesPlaceholder: "Напишите свой ответ...",
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                questions: ["О чем эта книга?", "В чем главный конфликт?", "Какую проблему раскрывает автор?", "Кому я сопереживал(а) и почему?", "Чей поступок вызвал больше всего вопросов?", "Что в книге кажется лишним или спорным?", "Какая цитата бьет прямо в цель?", "Что я понял(а) о себе через эту книгу?", "Кому и зачем её стоит прочесть?", "Инсайт (главная мысль)", "Эмоция (что чувствовал)", "Действие (что сделаю/подумаю иначе)"],
+                criteria: ["Сюжет и интрига", "Персонажи и их развитие", "Стиль и язык", "Эмоциональное воздействие", "Оригинальность", "Темп и динамика", "Атмосфера и мир", "Польза и познавательность", "Перечитываемость", "Концовка"],
+                deleteConfirmTitle: "Удалить книгу?", deleteConfirmMsg: "Вы уверены, что хотите удалить эту запись?", btnDelete: "Удалить"
+            },
+            en: {
+                navAll: "All books", navRating: "Rating", navMonths: "Months", navAuthors: "Authors",
+                navTags: "Hashtags", navCards: "Cards", navGoal: "Goals", navDeferred: "Wishlist", btnAddBook: "+ Book",
+                btnBack: "Back", searchPlaceholder: "Search by title or author...", searchCardsPlaceholder: "Search thoughts and themes...",
+                addBookCard: "Add book", planBookCard: "Plan a book",
+                goalTitle: "Yearly reading goal", booksToGoal: "to goal!", keepReading: "Keep reading",
+                goalReached: "Goal reached! 🎉", youRead: "You have read", inThisYear: "this year.",
+                addCover: "Add cover", inputTitle: "Book title", inputAuthor: "Author (comma separated)",
+                inputGenre: "Genre", inputTags: "Hashtags (comma separated)", inputSource: "Source link",
+                notesTitle: "Notes & Thoughts", inputCustomQ: "Enter custom question", btnCustomQ: "+ Custom question",
+                mediaTitle: "Media", btnAddPhotos: "Add photos", ratingTitle: "Rating",
+                btnSaveNotes: "Save notes", btnPlanBook: "Plan book",
+                modalGoalTitle: "Yearly reading goal", booksPerYear: "books/year", btnCancel: "Cancel",
+                btnSave: "Save", modalReadTitle: "Have you read the book?", modalReadSub: "Want to take notes?",
+                btnNo: "No", btnYes: "Yes", noNotes: "No notes", noCards: "Card index is empty. Write detailed answers (>20 chars), and the system will link them automatically.", alertEmptyTitle: "Please enter the book title",
+                unknownAuthor: "Unknown author", notesPlaceholder: "Write your answer...",
+                months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                questions: ["What is this book about?", "What is the main conflict?", "What problem does the author reveal?", "Who did I empathize with and why?", "Whose action raised the most questions?", "What seems redundant or controversial?", "Which quote hits the mark?", "What did I learn about myself?", "Who should read it and why?", "Insight (main thought)", "Emotion (what I felt)", "Action (what I'll do differently)"],
+                criteria: ["Plot & Intrigue", "Characters & Development", "Style & Language", "Emotional Impact", "Originality", "Pacing & Dynamics", "Atmosphere & World", "Usefulness & Knowledge", "Re-readability", "Ending"],
+                deleteConfirmTitle: "Delete book?", deleteConfirmMsg: "Are you sure you want to delete this entry?", btnDelete: "Delete"
+            },
+            es: {
+                navAll: "Todos", navRating: "Ranking", navMonths: "Meses", navAuthors: "Autores",
+                navTags: "Hashtags", navCards: "Tarjetas", navGoal: "Objetivos", navDeferred: "Wishlist", btnAddBook: "+ Libro",
+                btnBack: "Atrás", searchPlaceholder: "Buscar por título o autor...", searchCardsPlaceholder: "Buscar pensamientos y temas...",
+                addBookCard: "Añadir libro", planBookCard: "Planear libro",
+                goalTitle: "Meta de lectura anual", booksToGoal: "para la meta!", keepReading: "Sigue leyendo",
+                goalReached: "¡Meta alcanzada! 🎉", youRead: "Has leído", inThisYear: "este año.",
+                addCover: "Añadir portada", inputTitle: "Título del libro", inputAuthor: "Autor (separados por coma)",
+                inputGenre: "Género", inputTags: "Hashtags (separados por coma)", inputSource: "Enlace web",
+                notesTitle: "Notas y pensamientos", inputCustomQ: "Escribe tu pregunta", btnCustomQ: "+ Tu pregunta",
+                mediaTitle: "Multimedia", btnAddPhotos: "Añadir fotos", ratingTitle: "Ranking",
+                btnSaveNotes: "Guardar notas", btnPlanBook: "Planear libro",
+                modalGoalTitle: "Meta de lectura anual", booksPerYear: "libros al año", btnCancel: "Cancelar",
+                btnSave: "Guardar", modalReadTitle: "¿Ya leíste el libro?", modalReadSub: "¿Quieres hacer notas?",
+                btnNo: "No", btnYes: "Sí", noNotes: "Sin notas", noCards: "No hay tarjetas. Escribe respuestas largas (>20 car.) y el sistema las vinculará.", alertEmptyTitle: "Por favor, introduce el título del libro",
+                unknownAuthor: "Autor desconocido", notesPlaceholder: "Escribe tu respuesta...",
+                months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                questions: ["¿De qué trata este libro?", "¿Cuál es el conflicto principal?", "¿Qué problema revela el autor?", "¿Con quién empaticé y por qué?", "¿Qué acción generó más dudas?", "¿Qué parece redundante o controvertido?", "¿Qué cita da en el blanco?", "¿Qué aprendí sobre mí?", "¿Quién debería leerlo y por qué?", "Perspectiva (pensamiento principal)", "Emoción (lo que sentí)", "Acción (lo que haré diferente)"],
+                criteria: ["Trama e intriga", "Personajes y desarrollo", "Estilo y lenguaje", "Impacto emocional", "Originalidad", "Ritmo y dinámica", "Atmósfera y mundo", "Utilidad y conocimiento", "Relectura", "Final"],
+                deleteConfirmTitle: "¿Eliminar libro?", deleteConfirmMsg: "¿Estás seguro de que quieres eliminar esta entrada?", btnDelete: "Eliminar"
+            }
+        };
+
+        // Zettelkasten Stop Words (для исключения из анализа связей)
+        const ZK_STOP_WORDS = new Set([
+            'и','в','во','не','что','он','на','я','с','со','как','а','то','все','она','так','его','но','да','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','вдруг','ли','если','уже','или','ни','быть','был','него','до','вас','нибудь','опять','уж','вам','ведь','там','потом','себя','ничего','ей','может','они','тут','где','есть','надо','ней','для','мы','тебя','их','чем','была','сам','чтоб','без','будто','человек','чего','раз','тоже','себе','под','будет','ж','тогда','кто','этот','того','потому','этого','какой','совсем','ним','здесь','этом','один','почти','мой','тем','чтобы','такой','это','книга','книги','книге','книгу','автор','автора','очень','просто','этот','эта',
+            'the','a','an','and','or','but','is','are','was','were','in','on','at','to','of','for','with','about','this','that','it','not','book','author','from','which','what','when','why','how','they','them','their','there','then','than'
+        ]);
+
+        let currentLang = 'ru';
+        const savedLang = localStorage.getItem('reading_journal_lang');
+        if (savedLang && translations[savedLang]) {
+            currentLang = savedLang;
+        } else {
+            const tgLang = (window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code || navigator.language || 'ru').substring(0, 2).toLowerCase();
+            if (translations[tgLang]) currentLang = tgLang;
+        }
+
+        function t(key) {
+            return translations[currentLang][key] || translations['ru'][key] || key;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t(el.getAttribute('data-i18n')); });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+        }
+
+        function getMonthIndex(monthStr) {
+            for (const lang in translations) {
+                const idx = translations[lang].months.indexOf(monthStr);
+                if (idx !== -1) return idx;
+            }
+            return 0; 
+        }
+
+        function getBooksNoun(n) {
+            if (currentLang === 'ru') {
+                if (n % 10 === 1 && n % 100 !== 11) return 'книга';
+                if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'книги';
+                return 'книг';
+            } else if (currentLang === 'es') {
+                return n === 1 ? 'libro' : 'libros';
+            } else {
+                return n === 1 ? 'book' : 'books';
+            }
+        }
+
+        function getLocalizedQuestion(qKey) {
+            for (const lang in translations) {
+                const idx = translations[lang].questions.indexOf(qKey);
+                if (idx !== -1) return translations[currentLang].questions[idx];
+            }
+            return qKey;
+        }
 
         let books = [];
         let deferredBooks = [];
         let currentEditingId = null;
+        let currentViewingId = null;
         let isDeferredMode = false;
         let selectedCoverBase64 = null;
         let currentYearGoal = 20;
         let currentMediaFiles = [];
+
+        function loadInitialDataIfEmpty() {
+            if (!localStorage.getItem('reading_journal_v2')) {
+                books = [{
+                    id: 'sample_book_1',
+                    title: 'The Wolf Wilder',
+                    author: 'Katherine Rundell',
+                    genre: 'Fantasy',
+                    month: 'Январь',
+                    year: '2026',
+                    tags: ['Wolf', 'love'],
+                    rating: '9.0',
+                    img: 'https://m.media-amazon.com/images/I/71JKGT2iMZL._AC_UF1000,1000_QL80_.jpg', 
+                    criteria: [9,9,9,9,9,9,9,9,9,9], 
+                    answers: { 'О чем эта книга?': 'About life that changes a person.\nAbout feelings that cannot be explained in words.\nAbout choices that define the path.\nAbout people, encounters, and events that leave a mark.\nAnd about how through all this, a person gradually gets to know themselves.' },
+                    media: []
+                }];
+                localStorage.setItem('reading_journal_v2', JSON.stringify(books));
+            }
+        }
+
+        // Помощник для поиска по клику на тему
+        window.setSearchQuery = (q) => {
+            const searchInput = document.getElementById('shelf-search');
+            searchInput.value = q;
+            window.renderCurrentTab();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Помощник для скролла к связанной карточке
+        window.scrollToCard = (numId) => {
+            const cardEl = document.getElementById('card-' + numId);
+            if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardEl.style.boxShadow = '0 0 0 1px var(--tg-accent)';
+                setTimeout(() => { cardEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'; }, 2000);
+            }
+        };
 
         window.switchTab = (tabId) => {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -718,16 +845,38 @@
             const addBtn = document.getElementById('btn-add-global');
             const navTabs = document.getElementById('nav-tabs');
             const searchBar = document.getElementById('search-bar-container');
+            const themesCloud = document.getElementById('zk-themes-container');
+            const langDropdown = document.getElementById('lang-dropdown');
+            const searchInput = document.getElementById('shelf-search');
 
             if (tabId === 'add' || tabId === 'view') {
                 navTabs.classList.add('hidden');
                 searchBar.classList.add('hidden');
-                addBtn.innerText = "Назад";
+                themesCloud.classList.add('hidden');
+                if (langDropdown) langDropdown.classList.add('hidden'); 
+                addBtn.innerText = t('btnBack');
                 addBtn.onclick = () => window.switchTab(isDeferredMode ? 'deferred' : 'all');
             } else {
                 navTabs.classList.remove('hidden');
-                searchBar.classList.toggle('hidden', tabId === 'goal' || tabId === 'deferred');
-                addBtn.innerText = "+ Книга";
+                if (langDropdown) langDropdown.classList.remove('hidden'); 
+                
+                if (tabId === 'goal' || tabId === 'deferred') {
+                    searchBar.classList.add('hidden');
+                    themesCloud.classList.add('hidden');
+                } else {
+                    searchBar.classList.remove('hidden');
+                    // Меняем плейсхолдер и показываем облако тем для Картотеки
+                    if (tabId === 'cards') {
+                        searchInput.setAttribute('data-i18n-placeholder', 'searchCardsPlaceholder');
+                        themesCloud.classList.remove('hidden');
+                    } else {
+                        searchInput.setAttribute('data-i18n-placeholder', 'searchPlaceholder');
+                        themesCloud.classList.add('hidden');
+                    }
+                    searchInput.placeholder = t(searchInput.getAttribute('data-i18n-placeholder'));
+                }
+                
+                addBtn.innerText = t('btnAddBook');
                 addBtn.onclick = () => window.openAddForm();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.tab === tabId));
                 window.renderCurrentTab();
@@ -738,14 +887,20 @@
         window.renderCurrentTab = () => {
             const activeTab = document.querySelector('.nav-item.active')?.dataset.tab || 'all';
             const query = document.getElementById('shelf-search').value.toLowerCase();
+            
             if (activeTab === 'deferred') { renderDeferredShelf(); return; }
-            const filtered = books.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query));
-            if (activeTab === 'all') renderShelf('shelf-all', filtered);
-            else if (activeTab === 'rating') renderRatingTab(filtered);
-            else if (activeTab === 'months') renderByMonths(filtered);
-            else if (activeTab === 'authors') renderByAuthors(filtered);
-            else if (activeTab === 'tags') renderByTags(filtered);
-            else if (activeTab === 'goal') renderGoalTab();
+            
+            if (activeTab === 'cards') {
+                renderCardsTab(books, query);
+            } else {
+                const filtered = books.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query));
+                if (activeTab === 'all') renderShelf('shelf-all', filtered);
+                else if (activeTab === 'rating') renderRatingTab(filtered);
+                else if (activeTab === 'months') renderByMonths(filtered);
+                else if (activeTab === 'authors') renderByAuthors(filtered);
+                else if (activeTab === 'tags') renderByTags(filtered);
+                else if (activeTab === 'goal') renderGoalTab();
+            }
         };
 
         function getRatingClass(val) {
@@ -759,7 +914,7 @@
             const div = document.createElement('div');
             div.className = 'book-card';
             div.onclick = () => window.viewBook(b.id);
-            div.innerHTML = `<div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"><div class="book-date-badge">${b.month}</div></div>`;
+            div.innerHTML = `<div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"></div>`;
             return div;
         }
 
@@ -776,21 +931,23 @@
             shelf.innerHTML = '';
             if (containerId === 'shelf-all') {
                 const add = document.createElement('div');
-                add.className = 'book-card';
+                add.className = 'book-cover add-card';
                 add.onclick = () => window.openAddForm();
-                add.innerHTML = `<div class="book-cover add-card" style="border: 2px dashed var(--tg-hint); display: flex; align-items: center; justify-content: center; background:transparent"><span style="font-size: 40px; color: var(--tg-hint); font-weight: 300;">+</span></div>`;
+                add.innerHTML = `<div class="plus">+</div><div class="text">${t('addBookCard')}</div>`;
+                add.style.cursor = 'pointer';
                 shelf.appendChild(add);
             }
-            data.sort((a,b) => b.year !== a.year ? b.year - a.year : monthIndices[b.month] - monthIndices[a.month]).forEach(b => shelf.appendChild(createCard(b)));
+            data.sort((a,b) => b.year !== a.year ? b.year - a.year : getMonthIndex(b.month) - getMonthIndex(a.month)).forEach(b => shelf.appendChild(createCard(b)));
         }
 
         function renderDeferredShelf() {
             const shelf = document.getElementById('shelf-deferred');
             shelf.innerHTML = '';
             const add = document.createElement('div');
-            add.className = 'book-card';
+            add.className = 'book-cover add-card';
             add.onclick = () => window.openAddDeferredForm();
-            add.innerHTML = `<div class="book-cover add-card" style="border: 2px dashed var(--tg-hint); display: flex; align-items: center; justify-content: center; background:transparent"><span style="font-size: 40px; color: var(--tg-hint); font-weight: 300;">+</span></div>`;
+            add.innerHTML = `<div class="plus">+</div><div class="text">${t('planBookCard')}</div>`;
+            add.style.cursor = 'pointer';
             shelf.appendChild(add);
             deferredBooks.forEach(b => shelf.appendChild(createDeferredCard(b)));
         }
@@ -803,7 +960,17 @@
                 const item = document.createElement('div');
                 item.className = 'rating-list-item';
                 item.onclick = () => window.viewBook(b.id);
-                item.innerHTML = `<img class="rating-list-img" src="${b.img}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"><div class="rating-list-content"><div class="rl-title">${b.title}</div><div class="rl-author">${b.author}</div><div class="rl-meta">${b.genre} • ${b.month} ${b.year}</div></div><div class="rl-score-box ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>`;
+                const mName = translations[currentLang].months[getMonthIndex(b.month)];
+                const yStr = currentLang === 'ru' ? `${b.year} г.` : b.year;
+                item.innerHTML = `
+                    <img class="rating-list-img" src="${b.img}" onerror="this.style.display='none'">
+                    <div class="rating-list-content">
+                        <div class="rl-title">${b.title}</div>
+                        <div class="rl-author">${b.author}</div>
+                        <div class="rl-meta">${b.genre || ''} &nbsp; ${mName}, ${yStr}</div>
+                    </div>
+                    <div class="rl-score-box ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>
+                `;
                 shelf.appendChild(item);
             });
         }
@@ -814,10 +981,12 @@
             const years = [...new Set(data.map(b => b.year))].sort((a,b) => b-a);
             years.forEach(y => {
                 const yearBooks = data.filter(b => b.year === y);
-                const months = [...new Set(yearBooks.map(b => b.month))].sort((a,b) => monthIndices[b] - monthIndices[a]);
+                const months = [...new Set(yearBooks.map(b => b.month))].sort((a,b) => getMonthIndex(b) - getMonthIndex(a));
                 months.forEach(m => {
                     const group = document.createElement('div');
-                    group.innerHTML = `<div class="group-title">${m} ${y}</div>`;
+                    const mName = translations[currentLang].months[getMonthIndex(m)];
+                    const yStr = currentLang === 'ru' ? `${y} г.` : y;
+                    group.innerHTML = `<div class="group-title">${mName}, ${yStr}</div>`;
                     const grid = document.createElement('div');
                     grid.className = 'book-shelf';
                     yearBooks.filter(b => b.month === m).forEach(b => grid.appendChild(createCard(b)));
@@ -848,12 +1017,156 @@
             const tags = [...new Set(data.flatMap(b => b.tags || []))].sort();
             tags.forEach(t => {
                 const group = document.createElement('div');
-                group.innerHTML = `<div class="group-title">${t}</div>`;
+                group.innerHTML = `<div class="group-title">${t.charAt(0).toUpperCase() + t.slice(1)}</div>`;
                 const grid = document.createElement('div');
                 grid.className = 'book-shelf';
                 data.filter(b => (b.tags || []).includes(t)).forEach(b => grid.appendChild(createCard(b)));
                 group.appendChild(grid);
                 shelf.appendChild(group);
+            });
+        }
+
+        // --- ZETTELKASTEN LOGIC ---
+
+        function extractZKKeywords(text) {
+            // Убираем знаки препинания, переводим в нижний регистр, разбиваем на слова
+            const words = text.toLowerCase().replace(/[^а-яa-zё0-9]/g, ' ').split(/\s+/);
+            // Возвращаем только слова длиннее 3 символов, которые не являются стоп-словами
+            return [...new Set(words.filter(w => w.length > 3 && !ZK_STOP_WORDS.has(w)))];
+        }
+
+        function renderCardsTab(allBooks, query) {
+            const container = document.getElementById('cards-list');
+            const themesContainer = document.getElementById('zk-themes-container');
+            container.innerHTML = '';
+            
+            let zettelCards = [];
+            let cardIndex = 1;
+            let globalWordCounts = {};
+
+            // 1. Сортируем книги строго хронологически (от старых к новым) 
+            // для того, чтобы номера карточек присваивались навсегда и не сбивались
+            const getBookTime = (id) => isNaN(parseInt(id)) ? 0 : parseInt(id);
+            const sortedBooksChrono = [...allBooks].sort((a, b) => getBookTime(a.id) - getBookTime(b.id));
+
+            // Фаза 1: Сбор всех карточек и анализ частотности слов
+            sortedBooksChrono.forEach(book => {
+                if(book.answers) {
+                    Object.entries(book.answers).forEach(([qKey, answer]) => {
+                        const ansTrimmed = answer.trim();
+                        if(ansTrimmed.length > 20) {
+                            const localizedQ = getLocalizedQuestion(qKey);
+                            const keywords = extractZKKeywords(ansTrimmed + " " + localizedQ);
+                            
+                            // Считаем популярность слов для формирования облака тем
+                            keywords.forEach(kw => {
+                                globalWordCounts[kw] = (globalWordCounts[kw] || 0) + 1;
+                            });
+
+                            zettelCards.push({
+                                numId: String(cardIndex).padStart(5, '0'),
+                                bookId: book.id,
+                                qLocal: localizedQ,
+                                answer: ansTrimmed,
+                                title: book.title,
+                                author: book.author,
+                                keywords: keywords
+                            });
+                            cardIndex++;
+                        }
+                    });
+                }
+            });
+
+            // Формируем облако тем (Топ 15 слов, встречающихся больше 1 раза)
+            const topThemes = Object.entries(globalWordCounts)
+                .filter(entry => entry[1] > 1) // Слово должно быть минимум в 2 карточках
+                .sort((a,b) => b[1] - a[1]) // Сортируем по популярности
+                .slice(0, 15)
+                .map(e => e[0]);
+
+            themesContainer.innerHTML = topThemes.map(theme => 
+                `<div class="zk-theme-chip" onclick="window.setSearchQuery('${theme}')">#${theme}</div>`
+            ).join('');
+
+            if(zettelCards.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color: var(--tg-hint); margin-top: 40px;">${t('noCards')}</p>`;
+                return;
+            }
+
+            // Фаза 2: Поиск связей (линковка)
+            zettelCards.forEach(c1 => {
+                c1.related = [];
+                zettelCards.forEach(c2 => {
+                    if (c1.numId === c2.numId) return;
+                    // Находим общие значимые слова
+                    const common = c1.keywords.filter(k => c2.keywords.includes(k));
+                    if (common.length >= 2) { // Связываем, если есть хотя бы 2 общих ключевых слова
+                        c1.related.push({ numId: c2.numId, count: common.length, shared: common });
+                    }
+                });
+                // Сортируем связи по силе (количеству общих слов) и берем топ-3
+                c1.related.sort((a,b) => b.count - a.count);
+                c1.related = c1.related.slice(0, 3);
+            });
+
+            // 2. Переворачиваем готовый массив карточек. 
+            // Теперь самые свежие (с самыми большими порядковыми номерами) будут отображаться сверху!
+            zettelCards.reverse();
+
+            // Фаза 3: Отрисовка
+            zettelCards.forEach(card => {
+                // Если есть поисковой запрос, фильтруем
+                if (query) {
+                    const qLower = query.toLowerCase();
+                    if (!card.answer.toLowerCase().includes(qLower) && !card.qLocal.toLowerCase().includes(qLower)) {
+                        return; // Пропускаем
+                    }
+                }
+
+                const domCard = document.createElement('div');
+                domCard.className = 'thought-card';
+                domCard.id = 'card-' + card.numId;
+
+                // Если есть поисковой запрос, подсветим его
+                let htmlAnswer = card.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                if (query && query.length > 2) {
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    htmlAnswer = htmlAnswer.replace(regex, '<span class="zk-highlight">$1</span>');
+                }
+
+                // Рендер связей (Autonomous Links)
+                let linksHtml = '';
+                if (card.related.length > 0) {
+                    linksHtml = `
+                        <div class="zk-smart-links">
+                            <span class="zk-smart-links-title">
+                                <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                                Связанные мысли:
+                            </span>
+                            ${card.related.map(r => `<span class="zk-link-badge" title="Общее: ${r.shared.join(', ')}" onclick="window.scrollToCard('${r.numId}')">#${r.numId}</span>`).join('')}
+                        </div>
+                    `;
+                }
+
+                domCard.innerHTML = `
+                    <div class="thought-card-header">
+                        <span class="thought-card-num">#${card.numId}</span>
+                        <div class="thought-card-arrow" onclick="window.viewBook('${card.bookId}')" title="Перейти к книге">
+                            <svg viewBox="0 0 24 24"><polyline points="15 14 20 9 15 4"></polyline><path d="M4 20v-7a4 4 0 0 1 4-4h12"></path></svg>
+                        </div>
+                    </div>
+                    <div class="thought-card-content">
+                        <span class="thought-card-q">${card.qLocal}</span>
+                        <span class="thought-card-a">«${htmlAnswer}»</span>
+                    </div>
+                    ${linksHtml}
+                    <div class="thought-card-footer">
+                        <span class="thought-card-title">"${card.title}"</span>
+                        <span class="thought-card-author">${card.author}</span>
+                    </div>
+                `;
+                container.appendChild(domCard);
             });
         }
 
@@ -869,37 +1182,43 @@
                 if (i <= numRead) {
                     const book = yearBooks[i-1];
                     slot.classList.add('filled');
-                    slot.innerHTML = `<img src="${book.img}" onerror="this.style.display='none'"><div class="check-badge">${iconCheck}</div>`;
+                    slot.innerHTML = `<img src="${book.img}" onerror="this.style.display='none'">`;
                     slot.onclick = () => window.viewBook(book.id);
                 } else slot.innerText = i;
                 container.appendChild(slot);
             }
             const footer = document.getElementById('goal-footer-info');
             const diff = currentYearGoal - numRead;
-            footer.innerHTML = diff > 0 ? `<div class="goal-footer-main">${diff} ${getBooksNoun(diff)} до цели</div><div class="goal-footer-sub">Продолжайте читать!</div>` : `<div class="goal-footer-main" style="color: var(--tg-accent)">Цель достигнута! 🎉</div><div class="goal-footer-sub">Вы прочитали ${numRead} ${getBooksNoun(numRead)} в этом году.</div>`;
-        }
-
-        function getBooksNoun(n) {
-            if (n % 10 === 1 && n % 100 !== 11) return 'книга';
-            if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'книги';
-            return 'книг';
+            if(diff > 0) {
+                footer.innerHTML = `<div class="goal-footer-main">${diff} ${getBooksNoun(diff)} ${t('booksToGoal')}</div><div class="goal-footer-sub">${t('keepReading')}</div>`;
+            } else {
+                footer.innerHTML = `<div class="goal-footer-main" style="color: var(--tg-accent)">${t('goalReached')}</div><div class="goal-footer-sub">${t('youRead')} ${numRead} ${getBooksNoun(numRead)} ${t('inThisYear')}</div>`;
+            }
         }
 
         window.openGoalModal = () => {
-            const modal = document.getElementById('goal-modal-overlay');
-            document.getElementById('modal-title').innerText = "Годовая цель по чтению";
-            document.getElementById('modal-content').innerHTML = `<div class="goal-input-box"><input type="number" id="goal-input-value" value="${currentYearGoal}" min="1"><span>книг в год</span><div class="goal-stepper"><button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepUp()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="18 15 12 9 6 15"></polyline></svg></button><button class="goal-stepper-btn" onclick="document.getElementById('goal-input-value').stepDown()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg></button></div></div>`;
-            document.getElementById('modal-btns').className = "goal-modal-btns row";
-            document.getElementById('modal-btns').innerHTML = `<button class="btn-goal-action btn-goal-cancel" onclick="window.closeGoalModal()">Отменить</button><button class="btn-goal-action btn-goal-save" onclick="window.saveGoalSettings()">OK</button>`;
-            modal.classList.remove('hidden');
+            document.getElementById('modal-title').innerText = t('modalGoalTitle');
+            document.getElementById('modal-content').innerHTML = `
+                <div class="goal-input-box">
+                    <div class="goal-input-content">
+                        <input type="number" id="goal-input-value" value="${currentYearGoal}" min="1">
+                        <span>${t('booksPerYear')}</span>
+                    </div>
+                    <div class="goal-stepper">
+                        <button onclick="document.getElementById('goal-input-value').stepUp()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></button>
+                        <button onclick="document.getElementById('goal-input-value').stepDown()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+                    </div>
+                </div>`;
+            document.getElementById('modal-btns').innerHTML = `<button class="btn-full-width btn-secondary" onclick="window.closeGoalModal()">${t('btnCancel')}</button><button class="btn-full-width accent" onclick="window.saveGoalSettings()">${t('btnSave')}</button>`;
+            document.getElementById('goal-modal-overlay').classList.remove('hidden');
         };
 
         window.showDeferredMarkModal = (id) => {
             const modal = document.getElementById('goal-modal-overlay');
-            document.getElementById('modal-title').innerText = "Вы уже прочитали книгу?";
-            document.getElementById('modal-content').innerHTML = `<p style="margin-bottom:20px; font-size:14px; opacity:0.8">Хотите составить конспект?</p>`;
-            document.getElementById('modal-btns').className = "goal-modal-btns";
-            document.getElementById('modal-btns').innerHTML = `<button class="btn-goal-action btn-goal-save" onclick="window.handleDeferredAction('${id}', 'yes')">Да</button><button class="btn-goal-action btn-goal-cancel" onclick="window.handleDeferredAction('${id}', 'no')">Нет</button><button class="btn-goal-action btn-goal-gray" onclick="window.closeGoalModal()">Оставить в отложенных</button>`;
+            document.getElementById('modal-title').innerText = t('modalReadTitle');
+            document.getElementById('modal-content').innerHTML = `<p style="margin: 0 0 20px 0; font-size: 12px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #fff; text-align: center;">${t('modalReadSub')}</p>`;
+            document.getElementById('modal-btns').className = "goal-modal-btns row";
+            document.getElementById('modal-btns').innerHTML = `<button class="btn-full-width btn-secondary" onclick="window.handleDeferredAction('${id}', 'no')">${t('btnNo')}</button><button class="btn-full-width accent" onclick="window.handleDeferredAction('${id}', 'yes')">${t('btnYes')}</button>`;
             modal.classList.remove('hidden');
         };
 
@@ -910,7 +1229,9 @@
             window.closeGoalModal();
         };
 
-        window.closeGoalModal = () => document.getElementById('goal-modal-overlay').classList.add('hidden');
+        window.closeGoalModal = () => {
+            document.getElementById('goal-modal-overlay').classList.add('hidden');
+        };
         
         window.saveGoalSettings = () => {
             const val = parseInt(document.getElementById('goal-input-value').value);
@@ -918,40 +1239,87 @@
         };
 
         window.openAddForm = (bookId = null, prefillData = null) => {
+            document.getElementById('cover-input').value = ''; 
             currentEditingId = bookId; isDeferredMode = false; window.switchTab('add');
             document.getElementById('note-only-fields').classList.remove('hidden');
             document.getElementById('note-date-row').classList.remove('hidden');
             document.getElementById('f-source').classList.add('hidden');
+            document.getElementById('btn-save-main').innerText = t('btnSaveNotes');
+            
+            const monthSel = document.getElementById('f-month');
+            monthSel.innerHTML = translations[currentLang].months.map((m, i) => `<option value="${translations['ru'].months[i]}">${m}</option>`).join('');
+
             const yearSel = document.getElementById('f-year');
             if (yearSel.options.length === 0) { const cur = new Date().getFullYear(); for(let i=cur+2; i>=2000; i--) yearSel.add(new Option(i, i)); yearSel.value = cur; }
+            
             const book = prefillData || (bookId ? books.find(b => b.id === bookId) : null);
             document.getElementById('f-title').value = book?.title || '';
             document.getElementById('f-author').value = book?.author || '';
             document.getElementById('f-genre').value = book?.genre || '';
             document.getElementById('f-tags').value = (book?.tags || []).join(', ');
             document.getElementById('selected-questions').innerHTML = '';
+            
             selectedCoverBase64 = book?.img || null;
-            document.getElementById('cover-preview-container').innerHTML = selectedCoverBase64 ? `<img src="${selectedCoverBase64}">` : `<span>+<br>Обложка</span>`;
+            document.getElementById('cover-preview-container').innerHTML = selectedCoverBase64 ? `<img src="${selectedCoverBase64}">` : `<span style="font-size: 24px; margin-bottom: 8px; font-weight: 300;">+</span><span>${t('addCover')}</span>`;
+            
             currentMediaFiles = book?.media || [];
             renderMediaEditList();
-            document.getElementById('q-cloud').innerHTML = questionsPool.map(q => { const active = book && book.answers && book.answers[q]; return `<div class="q-chip ${active ? 'selected' : ''}" onclick="window.toggleQuestion(this, '${q}')">${q}</div>`; }).join('');
-            document.getElementById('ratings-list').innerHTML = ratingCriteria.map((c, i) => { const val = (book && book.criteria) ? book.criteria[i] : 5; return `<div class="rating-row"><div class="rating-info"><span>${c}</span><span id="rv-${i}">${val}</span></div><input type="range" class="rating-slider" min="1" max="10" value="${val}" oninput="document.getElementById('rv-${i}').innerText=this.value"></div>`; }).join('');
-            if (book && !prefillData) { document.getElementById('f-month').value = book.month; document.getElementById('f-year').value = book.year; if (book.answers) Object.entries(book.answers).forEach(([q, a]) => addQuestionItem(q, a, !questionsPool.includes(q))); }
+            
+            document.getElementById('q-cloud').innerHTML = translations[currentLang].questions.map((q, i) => { 
+                const ruQ = translations['ru'].questions[i];
+                const active = book && book.answers && (book.answers[ruQ] || book.answers[q]); 
+                return `<div class="q-chip ${active ? 'selected' : ''}" id="chip-q-${i}" onclick="window.toggleQuestion(this, ${i})">${q}</div>`; 
+            }).join('');
+            
+            document.getElementById('ratings-list').innerHTML = translations[currentLang].criteria.map((c, i) => { 
+                const val = (book && book.criteria) ? book.criteria[i] : 5; 
+                const pct = (val - 1) / 9 * 100;
+                return `
+                <div class="rating-row">
+                    <div class="rating-label">${c}</div>
+                    <div class="rating-slider-container">
+                        <input type="range" class="rating-slider" min="1" max="10" value="${val}" style="background-size: ${pct}% 100%;" oninput="this.style.backgroundSize = (this.value - this.min) / (this.max - this.min) * 100 + '% 100%'; document.getElementById('rv-${i}').innerText=this.value">
+                        <span class="rating-val-display" id="rv-${i}">${val}</span>
+                    </div>
+                </div>`; 
+            }).join('');
+            
+            if (book && !prefillData) { 
+                monthSel.value = book.month; 
+                document.getElementById('f-year').value = book.year; 
+                if (book.answers) {
+                    Object.entries(book.answers).forEach(([qKey, a]) => {
+                        let isStandard = false;
+                        for (const lang in translations) {
+                            const idx = translations[lang].questions.indexOf(qKey);
+                            if (idx !== -1) {
+                                addQuestionItem('q-' + idx, translations[currentLang].questions[idx], translations['ru'].questions[idx], a, false);
+                                isStandard = true; break;
+                            }
+                        }
+                        if (!isStandard) addQuestionItem('custom-' + Math.random(), qKey, qKey, a, true);
+                    });
+                }
+            }
         };
 
         window.openAddDeferredForm = (bookId = null) => {
+            document.getElementById('cover-input').value = ''; 
             currentEditingId = bookId; isDeferredMode = true; window.switchTab('add');
             document.getElementById('note-only-fields').classList.add('hidden');
             document.getElementById('note-date-row').classList.add('hidden');
             document.getElementById('f-source').classList.remove('hidden');
+            document.getElementById('btn-save-main').innerText = t('btnPlanBook');
+            
             const book = bookId ? deferredBooks.find(b => b.id === bookId) : null;
             document.getElementById('f-title').value = book?.title || '';
             document.getElementById('f-author').value = book?.author || '';
             document.getElementById('f-genre').value = book?.genre || '';
             document.getElementById('f-tags').value = (book?.tags || []).join(', ');
             document.getElementById('f-source').value = book?.sourceLink || '';
+            
             selectedCoverBase64 = book?.img || null;
-            document.getElementById('cover-preview-container').innerHTML = selectedCoverBase64 ? `<img src="${selectedCoverBase64}">` : `<span>+<br>Обложка</span>`;
+            document.getElementById('cover-preview-container').innerHTML = selectedCoverBase64 ? `<img src="${selectedCoverBase64}">` : `<span style="font-size: 24px; margin-bottom: 8px; font-weight: 300;">+</span><span>${t('addCover')}</span>`;
         };
 
         window.handleMediaUpload = (input) => {
@@ -961,6 +1329,7 @@
                     reader.onload = (e) => { currentMediaFiles.push(e.target.result); renderMediaEditList(); };
                     reader.readAsDataURL(file);
                 });
+                input.value = ''; 
             }
         };
 
@@ -971,42 +1340,77 @@
 
         window.removeMedia = (index) => { currentMediaFiles.splice(index, 1); renderMediaEditList(); };
 
-        window.toggleQuestion = (el, q) => {
+        window.toggleQuestion = (el, qIndex) => {
             el.classList.toggle('selected');
-            const id = 'q-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, '');
-            if (el.classList.contains('selected')) addQuestionItem(q, '', false);
-            else document.getElementById(id)?.remove();
+            const ruQ = translations['ru'].questions[qIndex];
+            const localQ = translations[currentLang].questions[qIndex];
+            const id = 'q-' + qIndex;
+            if (el.classList.contains('selected')) {
+                addQuestionItem(id, localQ, ruQ, '', false);
+            } else {
+                document.getElementById(id)?.remove();
+            }
         };
 
-        function addQuestionItem(q, val, isCustom) {
-            const container = document.getElementById('selected-questions');
-            const id = isCustom ? ('custom-' + Date.now() + Math.random()) : ('q-' + btoa(unescape(encodeURIComponent(q))).replace(/=/g, ''));
+        window.addCustomQuestionFromInput = () => {
+            const input = document.getElementById('custom-q-input');
+            const q = input.value.trim();
+            if(q) {
+                addQuestionItem('custom-' + Date.now(), q, q, '', true);
+                input.value = '';
+            }
+        }
+
+        window.removeQuestionItem = (btn, id) => {
+            btn.closest('.q-item').remove();
+            // Находим соответствующий чип в облаке и снимаем выделение
+            const chip = document.getElementById('chip-' + id);
+            if (chip) {
+                chip.classList.remove('selected');
+            }
+        };
+
+        function addQuestionItem(id, displayLabel, storageKey, val, isCustom) {
             if (!isCustom && document.getElementById(id)) return;
+            const container = document.getElementById('selected-questions');
             const div = document.createElement('div');
             div.className = 'q-item';
             div.id = id;
-            div.innerHTML = `<div class="q-header-row">${isCustom ? `<input type="text" class="custom-q-label-input" value="${q}" placeholder="Свой вопрос...">` : `<label>${q}</label>`}<div class="delete-q-btn" onclick="this.closest('.q-item').remove()">${iconTrash}</div></div><textarea placeholder="Ваш ответ...">${val}</textarea>`;
+            div.innerHTML = `
+                <div class="q-header-row">
+                    <label data-storage-key="${storageKey}">${displayLabel}</label>
+                    <div class="delete-q-btn" onclick="window.removeQuestionItem(this, '${id}')">${iconTrash}</div>
+                </div>
+                <textarea placeholder="${t('notesPlaceholder')}" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'">${val}</textarea>
+            `;
             container.appendChild(div);
+            
+            const ta = div.querySelector('textarea');
+            if (val) {
+                setTimeout(() => {
+                    ta.style.height = '';
+                    ta.style.height = ta.scrollHeight + 'px';
+                }, 0);
+            }
         }
-
-        window.addCustomQuestion = () => addQuestionItem('', '', true);
 
         window.previewImage = (input) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => { selectedCoverBase64 = e.target.result; document.getElementById('cover-preview-container').innerHTML = `<img src="${e.target.result}">`; };
                 reader.readAsDataURL(input.files[0]);
+                input.value = ''; 
             }
         };
 
         window.saveBook = () => {
             const title = document.getElementById('f-title').value.trim();
             if (!title) { 
-                if (window.Telegram?.WebApp?.showAlert) Telegram.WebApp.showAlert('Пожалуйста, введите название книги');
-                else alert('Пожалуйста, введите название книги');
+                if (window.Telegram?.WebApp?.showAlert) Telegram.WebApp.showAlert(t('alertEmptyTitle'));
+                else alert(t('alertEmptyTitle'));
                 return; 
             }
-            const authorRaw = document.getElementById('f-author').value.trim() || 'Неизвестный автор';
+            const authorRaw = document.getElementById('f-author').value.trim() || t('unknownAuthor');
             const authorNormalized = authorRaw.split(',').map(a => a.trim()).filter(Boolean).join(', ');
             const commonData = { title, author: authorNormalized, genre: document.getElementById('f-genre').value.trim(), img: selectedCoverBase64 || '', tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(t => t) };
             
@@ -1021,12 +1425,12 @@
                 const avg = (criteria.length > 0 ? (criteria.reduce((a,b) => a+b, 0) / criteria.length) : 0).toFixed(1);
                 const answers = {};
                 document.querySelectorAll('.q-item').forEach(item => {
-                    const labelEl = item.querySelector('label') || item.querySelector('.custom-q-label-input');
-                    const label = labelEl.tagName === 'INPUT' ? labelEl.value.trim() : labelEl.innerText;
+                    const labelEl = item.querySelector('label');
+                    const storageKey = labelEl.getAttribute('data-storage-key') || labelEl.innerText;
                     const text = item.querySelector('textarea').value.trim();
-                    if (label && text) answers[label] = text;
+                    if (storageKey && text) answers[storageKey] = text;
                 });
-                const noteData = { ...commonData, id: currentEditingId || Date.now().toString(), month: document.getElementById('f-month').value, year: document.getElementById('f-year').value, rating: avg, answers, criteria, media: currentMediaFiles, mediaMode: 'grid' };
+                const noteData = { ...commonData, id: currentEditingId || Date.now().toString(), month: document.getElementById('f-month').value, year: document.getElementById('f-year').value, rating: avg, answers, criteria, media: currentMediaFiles };
                 if (currentEditingId) books = books.map(b => b.id === currentEditingId ? noteData : b);
                 else books.unshift(noteData);
                 localStorage.setItem('reading_journal_v2', JSON.stringify(books));
@@ -1036,26 +1440,78 @@
         };
 
         window.viewBook = (id) => {
+            currentViewingId = id;
             const b = books.find(x => x.id === id); if (!b) return;
             const container = document.getElementById('note-details');
-            let qaHtml = ''; Object.entries(b.answers || {}).forEach(([q, a]) => { qaHtml += `<div class="note-qa-item"><span class="q">${q}</span><div class="a">${a}</div></div>`; });
-            let ratingsHtml = `<div class="view-detailed-ratings"><div class="group-title">Детальный рейтинг</div>`;
-            ratingCriteria.forEach((name, i) => { ratingsHtml += `<div class="view-rating-item"><span>${name}</span><span class="rating-badge-score">${b.criteria[i]}</span></div>`; });
+            let qaHtml = ''; Object.entries(b.answers || {}).forEach(([qKey, a]) => { 
+                qaHtml += `<div class="note-qa-item"><span class="q">${getLocalizedQuestion(qKey)}</span><div class="a">${a}</div></div>`; 
+            });
+            let ratingsHtml = `<div class="view-detailed-ratings"><div class="group-title" style="margin-top:0">${t('ratingTitle')}</div>`;
+            translations[currentLang].criteria.forEach((name, i) => { ratingsHtml += `<div class="view-rating-item"><span>${name}</span><span class="rating-badge-score">${b.criteria[i]}</span></div>`; });
             ratingsHtml += '</div>';
             
             let mediaHtml = '';
             if (b.media && b.media.length > 0) {
-                const isGrid = (b.mediaMode || 'grid') === 'grid';
-                mediaHtml = `<div class="view-media-header"><div class="group-title" style="margin:0">Медиа</div><div class="media-mode-switch"><button class="btn-mini-action ${isGrid ? 'fill' : ''}" onclick="window.updateMediaMode('${b.id}', 'grid')">${iconGrid}</button><button class="btn-mini-action ${!isGrid ? 'fill' : ''}" onclick="window.updateMediaMode('${b.id}', 'carousel')">${iconCarousel}</button></div></div><div class="${isGrid ? 'media-display-grid' : 'media-display-carousel'}">${b.media.map(src => `<div class="media-item" onclick="window.openLightbox('${src}')"><img src="${src}"></div>`).join('')}</div>`;
+                mediaHtml = `<div class="group-title">${t('mediaTitle')}</div><div class="media-display-grid">${b.media.map(src => `<div class="media-item" onclick="window.openLightbox('${src}')"><img src="${src}"></div>`).join('')}</div>`;
             }
 
-            container.innerHTML = `<div class="view-header-flex"><div class="view-cover-fixed"><div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"></div></div><div class="view-info-text"><h1>${b.title}</h1><h2>${b.author}</h2><div class="view-genre">${b.genre || ''}</div><div><span class="view-month">${b.month}</span> <span class="view-year">${b.year}</span></div><div class="view-tags-container">${(b.tags || []).map(t => `<span class="view-tag">#${t}</span>`).join('')}</div></div></div><div class="view-actions-side"><button class="btn-base btn-mini-action fill" onclick="window.openAddForm('${b.id}')">${iconEdit}</button><button class="btn-base btn-mini-action" onclick="window.exportPDF('${b.title}')">${iconPdf}</button><button class="btn-base btn-mini-action" onclick="window.deleteBook('${b.id}')">${iconTrash}</button></div><div class="note-qa">${qaHtml || '<p style="text-align:center; opacity:0.5">Нет заметок</p>'}</div>${mediaHtml}${ratingsHtml}`;
+            const mName = translations[currentLang].months[getMonthIndex(b.month)];
+            const yStr = currentLang === 'ru' ? `${b.year} г.` : b.year;
+
+            const genreHtml = b.genre ? `<div class="view-genre">${b.genre}</div>` : '';
+            const tagsHtml = (b.tags && b.tags.length > 0) ? `<div class="view-tags-container">${b.tags.map(tg => `<span class="view-tag">#${tg.charAt(0).toUpperCase() + tg.slice(1)}</span>`).join('')}</div>` : '';
+
+            container.innerHTML = `
+                <div class="view-header-flex">
+                    <div class="view-cover-fixed">
+                        <div class="rating-badge ${getRatingClass(b.rating)}">${parseFloat(b.rating).toFixed(1)}</div>
+                        <div class="book-cover" style="aspect-ratio: 2/3;">
+                            <img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'">
+                        </div>
+                    </div>
+                    <div class="view-info-column">
+                        <div class="view-text-info">
+                            <h1>${b.title}</h1>
+                            <h2>${b.author}</h2>
+                            ${genreHtml}
+                            <div class="view-date">${mName}, ${yStr}</div>
+                            ${tagsHtml}
+                        </div>
+                        <div class="view-actions-row">
+                            <button class="btn-mini-action fill" onclick="window.openAddForm('${b.id}')">${iconEdit}</button>
+                            <button class="btn-mini-action" onclick="window.exportPDF('${b.id}')">${iconPdf}</button>
+                            <button class="btn-mini-action" onclick="window.deleteBook('${b.id}')">${iconTrash}</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="note-qa">${qaHtml || `<p style="text-align:center; opacity:0.5; margin-top:40px;">${t('noNotes')}</p>`}</div>
+                ${mediaHtml ? `<div class="media-section">${mediaHtml}</div>` : ''}
+                ${ratingsHtml}
+            `;
             isDeferredMode = false; window.switchTab('view');
         };
 
-        window.updateMediaMode = (bookId, mode) => {
-            const b = books.find(x => x.id === bookId);
-            if (b) { b.mediaMode = mode; localStorage.setItem('reading_journal_v2', JSON.stringify(books)); window.viewBook(bookId); }
+        window.deleteBook = (id) => {
+            const b = books.find(x => x.id === id);
+            if (!b) return;
+
+            document.getElementById('modal-title').innerText = t('deleteConfirmTitle');
+            document.getElementById('modal-content').innerHTML = `<p style="margin: 0 0 20px 0; font-size: 14px; color: #fff; text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 500;">${t('deleteConfirmMsg')}</p>`;
+            document.getElementById('modal-btns').className = "goal-modal-btns row";
+            document.getElementById('modal-btns').innerHTML = `
+                <button class="btn-full-width btn-secondary" onclick="window.closeGoalModal()">${t('btnCancel')}</button>
+                <button class="btn-full-width accent" style="background: var(--rating-red); color: #fff;" onclick="window.confirmDeleteBook('${id}')">${t('btnDelete')}</button>
+            `;
+            document.getElementById('goal-modal-overlay').classList.remove('hidden');
+        };
+
+        window.confirmDeleteBook = (id) => {
+            books = books.filter(b => b.id !== id);
+            localStorage.setItem('reading_journal_v2', JSON.stringify(books));
+            window.closeGoalModal();
+            window.switchTab('all');
+            if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
         };
 
         window.openLightbox = (src) => {
@@ -1064,39 +1520,271 @@
         };
 
         window.viewDeferredBook = (id) => {
+            currentViewingId = id;
             const b = deferredBooks.find(x => x.id === id); if (!b) return;
             const container = document.getElementById('note-details');
-            container.innerHTML = `<div class="view-header-flex"><div class="view-cover-fixed"><div class="book-cover"><img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'"></div></div><div class="view-info-text"><h1>${b.title}</h1><h2>${b.author}</h2><div class="view-genre">${b.genre || ''}</div><div class="view-tags-container">${(b.tags || []).map(t => `<span class="view-tag">#${t}</span>`).join('')}</div></div></div><div class="view-actions-side"><button class="btn-base btn-mini-action fill" onclick="window.openAddDeferredForm('${b.id}')">${iconEdit}</button><button class="btn-base btn-mini-action" onclick="window.deleteDeferredBook('${b.id}')">${iconTrash}</button></div>`;
+            
+            const genreHtml = b.genre ? `<div class="view-genre">${b.genre}</div>` : '';
+            const tagsHtml = (b.tags && b.tags.length > 0) ? `<div class="view-tags-container">${b.tags.map(tg => `<span class="view-tag">#${tg.charAt(0).toUpperCase() + tg.slice(1)}</span>`).join('')}</div>` : '';
+
+            container.innerHTML = `
+                <div class="view-header-flex">
+                    <div class="view-cover-fixed">
+                        <div class="book-cover" style="aspect-ratio: 2/3;">
+                            <img src="${b.img}" onerror="this.parentElement.style.background='#333'; this.style.display='none'">
+                        </div>
+                    </div>
+                    <div class="view-info-column">
+                        <div class="view-text-info">
+                            <h1>${b.title}</h1>
+                            <h2>${b.author}</h2>
+                            ${genreHtml}
+                            ${tagsHtml}
+                        </div>
+                        <div class="view-actions-row">
+                            <button class="btn-mini-action fill" onclick="window.openAddDeferredForm('${b.id}')">${iconEdit}</button>
+                            <button class="btn-mini-action" onclick="window.deleteDeferredBook('${b.id}')">${iconTrash}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
             isDeferredMode = true; window.switchTab('view');
         };
 
-        window.openSource = (link) => { if (link) window.open(link, '_blank'); };
-        
-        window.deleteBook = (id) => { 
-            books = books.filter(b => b.id !== id); 
-            localStorage.setItem('reading_journal_v2', JSON.stringify(books)); 
-            window.switchTab('all'); 
-            if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        window.deleteDeferredBook = (id) => {
+            const b = deferredBooks.find(x => x.id === id);
+            if (!b) return;
+
+            document.getElementById('modal-title').innerText = t('deleteConfirmTitle');
+            document.getElementById('modal-content').innerHTML = `<p style="margin: 0 0 20px 0; font-size: 14px; color: #fff; text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 500;">${t('deleteConfirmMsg')}</p>`;
+            document.getElementById('modal-btns').className = "goal-modal-btns row";
+            document.getElementById('modal-btns').innerHTML = `
+                <button class="btn-full-width btn-secondary" onclick="window.closeGoalModal()">${t('btnCancel')}</button>
+                <button class="btn-full-width accent" style="background: var(--rating-red); color: #fff;" onclick="window.confirmDeleteDeferredBook('${id}')">${t('btnDelete')}</button>
+            `;
+            document.getElementById('goal-modal-overlay').classList.remove('hidden');
         };
 
-        window.deleteDeferredBook = (id) => { 
-            deferredBooks = deferredBooks.filter(b => b.id !== id); 
-            localStorage.setItem('reading_journal_deferred', JSON.stringify(deferredBooks)); 
-            window.switchTab('deferred'); 
-            if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        window.confirmDeleteDeferredBook = (id) => {
+            deferredBooks = deferredBooks.filter(b => b.id !== id);
+            localStorage.setItem('reading_journal_deferred', JSON.stringify(deferredBooks));
+            window.closeGoalModal();
+            window.switchTab('deferred');
+            if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
         };
 
-        window.exportPDF = async (name) => {
-            const element = document.getElementById('note-details');
-            document.body.classList.add('pdf-export-mode');
-            const opt = { margin: 10, filename: `Reading_Note_${name.replace(/\s+/g, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            try { await html2pdf().set(opt).from(element).save(); } finally { document.body.classList.remove('pdf-export-mode'); }
+        window.exportPDF = async (bookId) => {
+            const b = books.find(x => x.id === bookId);
+            if (!b) return;
+
+            const scrollY = window.scrollY;
+            const loader = document.createElement('div');
+            loader.setAttribute('data-html2canvas-ignore', 'true');
+            loader.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:var(--tg-bg); z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:"Montserrat", sans-serif; text-align:center; padding: 20px;';
+            loader.innerHTML = '<div style="font-size:18px; font-weight:600; margin-bottom:16px;">Формируем PDF...</div><div style="font-size:14px; color:var(--tg-hint); font-weight:400;">Пожалуйста, подождите пару секунд</div>';
+            document.body.appendChild(loader);
+
+            await new Promise(r => setTimeout(r, 100));
+            window.scrollTo(0, 0);
+
+            const originalChildren = [];
+            Array.from(document.body.children).forEach(child => {
+                if (child !== loader && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+                    originalChildren.push({ el: child, display: child.style.display });
+                    child.style.display = 'none';
+                }
+            });
+
+            const originalHtmlBg = document.documentElement.style.backgroundColor;
+            const originalBodyBg = document.body.style.backgroundColor;
+            const originalOverflowX = document.body.style.overflowX;
+            const originalBodyMargin = document.body.style.margin;
+            const originalBodyPadding = document.body.style.padding;
+            const originalMinWidth = document.body.style.minWidth;
+            
+            document.documentElement.style.backgroundColor = '#ffffff';
+            document.body.style.backgroundColor = '#ffffff';
+            document.body.style.overflowX = 'visible'; 
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+            document.body.style.minWidth = '800px';
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.cssText = 'width: 800px; padding: 40px 60px; background: #ffffff; color: #111111; font-family: "Montserrat", sans-serif; box-sizing: border-box; margin: 0; display: block; text-align: left; position: relative;';
+
+            const mName = translations[currentLang].months[getMonthIndex(b.month)];
+            const yStr = currentLang === 'ru' ? `${b.year} г.` : b.year;
+
+            const genreHtml = b.genre ? `<div style="font-size: 15px; color: #666; margin-bottom: 8px;">${b.genre}</div>` : '';
+            const tagsHtml = (b.tags && b.tags.length > 0) ? `<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">${b.tags.map(tg => `<span style="background: #F0F0F0; padding: 6px 12px; border-radius: 16px; font-size: 12px; color: #444; font-weight: 600;">#${tg.charAt(0).toUpperCase() + tg.slice(1)}</span>`).join('')}</div>` : '';
+
+            let badgeColor = '#2ECB5B';
+            const ratingNum = parseFloat(b.rating);
+            if (ratingNum < 5) badgeColor = '#D34C4C';
+            else if (ratingNum < 8) badgeColor = '#4C6CD3';
+
+            let qaHtml = '';
+            const ansEntries = Object.entries(b.answers || {});
+            if (ansEntries.length > 0) {
+                qaHtml += `<div style="margin-bottom: 40px;">`;
+                ansEntries.forEach(([qKey, a], index) => { 
+                    const isLast = index === ansEntries.length - 1;
+                    qaHtml += `<div style="margin-bottom: ${isLast ? 0 : 40}px; break-inside: avoid;"><div style="font-size: 14px; color: #666; font-style: italic; margin-bottom: 8px;">${getLocalizedQuestion(qKey)}</div><div style="font-size: 16px; line-height: 1.6; white-space: pre-wrap; color: #111; font-weight: 500;">${a}</div></div>`; 
+                });
+                qaHtml += `</div>`;
+            }
+
+            let ratingsHtml = '';
+            if (b.criteria && b.criteria.length > 0) {
+                ratingsHtml = `<div style="background: #F9F9F9; border-radius: 12px; padding: 24px; margin-top: 80px; break-inside: avoid;"><div style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #111; border-left: 4px solid #8CD136; padding-left: 12px;">${t('ratingTitle')}</div>`;
+                translations[currentLang].criteria.forEach((name, i) => { 
+                    ratingsHtml += `<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EAEAEA; font-size: 15px; font-weight: 600; color: #333;"><span>${name}</span><span style="font-weight: 700; color: #111;">${b.criteria[i]}</span></div>`; 
+                });
+                ratingsHtml += '</div>';
+            }
+
+            let mediaHtml = '';
+            if (b.media && b.media.length > 0) {
+                mediaHtml = `<div style="margin-bottom: 40px; break-inside: avoid;"><div style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #111; border-left: 4px solid #8CD136; padding-left: 12px;">${t('mediaTitle')}</div><div style="display: flex; flex-wrap: wrap; gap: 16px;">${b.media.map(src => `<div style="width: 150px; height: 150px; border-radius: 8px; background-color: #F0F0F0; background-image: url('${src}'); background-size: cover; background-position: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);"></div>`).join('')}</div></div>`;
+            }
+
+            pdfContainer.innerHTML = `
+                <div style="display: flex; gap: 32px; margin-bottom: 40px; align-items: flex-start; break-inside: avoid;">
+                    <div style="width: 180px; flex-shrink: 0; position: relative;">
+                        <div style="position: absolute; top: -10px; right: -10px; width: 36px; height: 36px; border-radius: 50%; background-color: ${badgeColor}; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; z-index: 10; border: 2px solid #fff;">${parseFloat(b.rating).toFixed(1)}</div>
+                        <img src="${b.img}" crossorigin="anonymous" style="width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);">
+                    </div>
+                    <div style="flex: 1; padding-top: 10px;">
+                        <h1 style="font-size: 32px; margin: 0 0 12px 0; font-weight: 800; line-height: 1.2; color: #111;">${b.title}</h1>
+                        <h2 style="font-size: 18px; margin: 0 0 16px 0; font-weight: 600; color: #444;">${b.author}</h2>
+                        ${genreHtml}
+                        <div style="font-size: 14px; color: #666; font-weight: 500;">${mName}, ${yStr}</div>
+                        ${tagsHtml}
+                    </div>
+                </div>
+                ${qaHtml}
+                ${mediaHtml}
+                ${ratingsHtml}
+            `;
+
+            document.body.appendChild(pdfContainer);
+            await new Promise(r => setTimeout(r, 600));
+
+            const opt = {
+                margin: [15, 0],
+                filename: `Reading_Note_${b.title.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false, 
+                    backgroundColor: '#ffffff',
+                    windowWidth: 800,
+                    width: 800,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(opt).from(pdfContainer).save();
+            } catch(e) {
+                console.error(e);
+            } finally {
+                document.body.removeChild(pdfContainer);
+                document.body.removeChild(loader);
+                document.documentElement.style.backgroundColor = originalHtmlBg;
+                document.body.style.backgroundColor = originalBodyBg;
+                document.body.style.overflowX = originalOverflowX; 
+                document.body.style.margin = originalBodyMargin;
+                document.body.style.padding = originalBodyPadding;
+                document.body.style.minWidth = originalMinWidth;
+                originalChildren.forEach(item => { item.el.style.display = item.display; });
+                window.scrollTo(0, scrollY);
+            }
+        };
+
+        const langDisplayMap = { ru: 'RUS', en: 'ENG', es: 'SPA' };
+
+        window.toggleLangMenu = (e) => {
+            if (e) e.stopPropagation();
+            document.getElementById('lang-menu').classList.toggle('hidden');
+        };
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('lang-menu');
+            const toggle = document.getElementById('btn-lang-toggle');
+            if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && e.target !== toggle) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        window.setLanguage = (langCode) => {
+            currentLang = langCode;
+            localStorage.setItem('reading_journal_lang', currentLang);
+            applyTranslations();
+            
+            document.getElementById('btn-lang-toggle').innerText = langDisplayMap[currentLang];
+            document.getElementById('lang-menu').classList.add('hidden');
+            
+            const monthSelect = document.getElementById('f-month');
+            const prevMonthVal = monthSelect.value;
+            monthSelect.innerHTML = translations[currentLang].months.map((m, i) => `<option value="${translations['ru'].months[i]}">${m}</option>`).join('');
+            if(prevMonthVal) monthSelect.value = prevMonthVal;
+            
+            const isAddOpen = !document.getElementById('tab-add').classList.contains('hidden');
+            const isViewOpen = !document.getElementById('tab-view').classList.contains('hidden');
+            
+            if (isAddOpen) {
+                document.getElementById('q-cloud').innerHTML = translations[currentLang].questions.map((q, i) => { 
+                    const active = !!document.getElementById('q-' + i); 
+                    return `<div class="q-chip ${active ? 'selected' : ''}" id="chip-q-${i}" onclick="window.toggleQuestion(this, ${i})">${q}</div>`; 
+                }).join('');
+                
+                document.querySelectorAll('.q-item').forEach(item => {
+                    const label = item.querySelector('label');
+                    const key = label.getAttribute('data-storage-key');
+                    for (const l in translations) {
+                        const idx = translations[l].questions.indexOf(key);
+                        if (idx !== -1) { label.innerText = translations[currentLang].questions[idx]; break; }
+                    }
+                });
+                
+                document.querySelectorAll('.rating-row .rating-label').forEach((el, i) => {
+                    el.innerText = translations[currentLang].criteria[i];
+                });
+                
+                if (selectedCoverBase64) {
+                    document.getElementById('cover-preview-container').innerHTML = `<img src="${selectedCoverBase64}">`;
+                } else {
+                    document.getElementById('cover-preview-container').innerHTML = `<span style="font-size: 24px; margin-bottom: 8px; font-weight: 300;">+</span><span>${t('addCover')}</span>`;
+                }
+                document.getElementById('btn-save-main').innerText = isDeferredMode ? t('btnPlanBook') : t('btnSaveNotes');
+            } else if (isViewOpen && currentViewingId) {
+                if (isDeferredMode) window.viewDeferredBook(currentViewingId);
+                else window.viewBook(currentViewingId);
+            } else {
+                window.renderCurrentTab();
+            }
         };
 
         window.onload = () => {
-            const saved = localStorage.getItem('reading_journal_v2'); if (saved) books = JSON.parse(saved);
+            applyTranslations();
+            document.getElementById('btn-lang-toggle').innerText = langDisplayMap[currentLang] || 'RUS';
+            
+            loadInitialDataIfEmpty();
+            const saved = localStorage.getItem('reading_journal_v2'); 
+            if (saved) books = JSON.parse(saved);
             const savedDef = localStorage.getItem('reading_journal_deferred'); if (savedDef) deferredBooks = JSON.parse(savedDef);
             const savedGoal = localStorage.getItem('reading_goal_v2'); if (savedGoal) currentYearGoal = parseInt(savedGoal);
+            
+            const monthSelect = document.getElementById('f-month');
+            monthSelect.innerHTML = translations[currentLang].months.map((m, i) => `<option value="${translations['ru'].months[i]}">${m}</option>`).join('');
+
             window.switchTab('all'); Telegram.WebApp.ready(); Telegram.WebApp.expand();
         };
     </script>
