@@ -148,7 +148,8 @@
             margin: 0 auto; 
         }
         @media (min-width: 500px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
-        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 20px; } }
+        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(5, 1fr); gap: 20px; } }
+        @media (min-width: 1024px) { .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 20px; } }
 
         .book-card { position: relative; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; }
         .book-card:active { transform: scale(0.97); }
