@@ -51,7 +51,7 @@
 
         /* Navigation */
         .top-nav {
-            position: sticky; top: 0;
+            position: relative;
             background-color: var(--tg-bg); z-index: 100;
             padding: 16px 20px; display: flex; align-items: center; gap: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -144,11 +144,11 @@
 
         /* Grid Shelf */
         .book-shelf { 
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; 
             margin: 0 auto; 
         }
-        @media (min-width: 480px) { .book-shelf { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
-        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
+        @media (min-width: 500px) { .book-shelf { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+        @media (min-width: 768px) { .book-shelf { grid-template-columns: repeat(6, 1fr); gap: 20px; } }
 
         .book-card { position: relative; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; }
         .book-card:active { transform: scale(0.97); }
@@ -164,7 +164,7 @@
             border: 1px solid rgba(255,255,255,0.05); color: var(--tg-hint);
         }
         .add-card .plus { font-size: 24px; font-weight: 300; margin-bottom: 8px; }
-        .add-card .text { font-size: 13px; font-weight: 500; }
+        .add-card .text { font-size: 13px; font-weight: 500; text-align: center; }
         
         .rating-badge { 
             position: absolute; top: -6px; right: -6px; font-size: 11px; font-weight: 700; 
@@ -248,13 +248,14 @@
         }
 
         /* Form Styles */
-        .add-form { display: flex; flex-direction: column; gap: 40px; padding-bottom: 100px; max-width: 700px; margin: 0 auto; }
+        .add-form { display: flex; flex-direction: column; gap: 56px; padding-bottom: 100px; max-width: 700px; margin: 0 auto; }
         
         #note-only-fields {
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 56px;
         }
+        #note-only-fields .group-title { margin-top: 0; }
         
         .form-header-row { 
             display: flex; gap: 20px; align-items: stretch;
@@ -292,20 +293,103 @@
             pointer-events: none; width: 14px; height: 14px; opacity: 0.5;
         }
 
-        .questions-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .questions-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
         .q-chip { 
             padding: 10px 16px; background: var(--tg-sec-bg); border-radius: 20px; 
             font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.2s; 
+            display: flex; align-items: center; gap: 6px;
         }
         .q-chip.selected { background: var(--tg-accent); color: #000; font-weight: 600; }
 
-        .custom-q-input-wrap { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;}
+        /* Иконка плюсика для обычного состояния */
+        .q-chip:not(.generate-btn)::before {
+            content: '';
+            display: block;
+            width: 14px; height: 14px;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='12' y1='5' x2='12' y2='19'%3E%3C/line%3E%3Cline x1='5' y1='12' x2='19' y2='12'%3E%3C/line%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Иконка галочки для выбранного состояния (черного цвета) */
+        .q-chip.selected:not(.generate-btn)::before {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        /* Кастомный CSS-тултип */
+        .q-chip[data-tooltip] {
+            position: relative;
+        }
+        .q-chip[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-text);
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .q-chip[data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+            bottom: calc(100% + 8px);
+        }
+
+        /* Стиль для кнопки генерации вопросов */
+        .q-chip.generate-btn {
+            background: rgba(140, 209, 54, 0.15);
+            color: var(--tg-accent);
+            border: 1px solid var(--tg-accent);
+        }
+        .q-chip.generate-btn:hover, .q-chip.generate-btn:active {
+            background: var(--tg-accent);
+            color: #000;
+        }
+
+        /* Стиль для неактивной кнопки генерации */
+        .q-chip.generate-btn.disabled {
+            background: transparent;
+            color: var(--tg-hint);
+            border: 1px dashed var(--tg-hint);
+            cursor: default;
+        }
+        .q-chip.generate-btn.disabled:hover, .q-chip.generate-btn.disabled:active {
+            background: transparent;
+            color: var(--tg-hint);
+        }
+
+        /* Интерактивная кнопка добавления своего вопроса */
+        #btn-add-custom-q {
+            transition: all 0.3s ease;
+        }
+        #btn-add-custom-q.ready {
+            background: var(--tg-accent);
+            color: #000;
+        }
+
+        .custom-q-input-wrap { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
         .custom-q-input-wrap input { background: var(--tg-sec-bg); border: none; padding: 14px; border-radius: var(--border-radius-input); color: #fff; font-size: 13px;}
         
+        #selected-questions { margin-top: 24px; }
+        #selected-questions:empty { margin-top: 0; }
+
         .q-item { 
             background: var(--tg-sec-bg); border-radius: var(--border-radius-card); padding: 16px; 
             margin-bottom: 16px; position: relative; 
         }
+        .q-item:last-child { margin-bottom: 0; }
         .q-item .q-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .q-item label { display: block; font-size: 13px; font-weight: 500; color: var(--tg-hint); }
         .q-item textarea { 
@@ -323,7 +407,7 @@
 
         /* Rating Sliders Improvements */
         .rating-row { margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-        /* Увеличили ширину названия критерия, чтобы текст не переносился */
+        .rating-row:last-child { margin-bottom: 0; }
         .rating-label { font-size: 13px; font-weight: 500; color: var(--tg-hint); width: 220px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rating-slider-container { flex: 1; display: flex; align-items: center; gap: 12px; position: relative; }
         .rating-slider { 
@@ -340,6 +424,7 @@
 
         @media (max-width: 500px) {
             .rating-row { flex-direction: column; align-items: stretch; gap: 8px; margin-bottom: 24px;}
+            .rating-row:last-child { margin-bottom: 0; }
             .rating-label { width: auto; display: flex; justify-content: space-between; white-space: normal; }
             .rating-val-display { display: none; }
         }
@@ -347,6 +432,7 @@
         /* Media */
         .media-section { margin-bottom: 40px; }
         .media-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 16px; }
+        .media-edit-grid:empty { margin-top: 0; display: none; }
         .media-edit-item { aspect-ratio: 1; border-radius: var(--border-radius-input); overflow: hidden; position: relative; background: var(--tg-bg); }
         .media-edit-item img { width: 100%; height: 100%; object-fit: cover; }
         .media-del-btn {
@@ -362,7 +448,7 @@
             background: var(--tg-sec-bg); color: var(--tg-text); transition: 0.2s;
             font-family: 'Montserrat', sans-serif;
         }
-        .btn-full-width.accent { background: var(--tg-accent); color: #fff; margin-top: 20px; }
+        .btn-full-width.accent { background: var(--tg-accent); color: #fff; margin-top: 0; }
         .btn-full-width:active { opacity: 0.8; }
 
         .btn-mini-action { background: var(--tg-sec-bg); color: var(--tg-text); border-radius: var(--border-radius-input); width: 40px; height: 40px; padding: 0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -571,7 +657,7 @@
 
             <div id="tab-goal" class="section hidden">
                 <div class="goal-container">
-                    <div class="group-title flex-between" style="margin-top: 0;">
+                    <div class="group-title flex-between" style="margin-top: 0; margin-bottom: 24px;">
                         <span data-i18n="goalTitle">Цель чтения на год</span>
                         <button class="icon-btn-settings" onclick="window.openGoalModal()">
                             <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -597,7 +683,7 @@
                         <div class="form-inputs">
                             <input type="text" id="f-title" data-i18n-placeholder="inputTitle" placeholder="Название книги">
                             <input type="text" id="f-author" data-i18n-placeholder="inputAuthor" placeholder="Автор (через запятую)">
-                            <input type="text" id="f-genre" data-i18n-placeholder="inputGenre" placeholder="Жанр">
+                            <input type="text" id="f-genre" data-i18n-placeholder="inputGenre" placeholder="Жанр" oninput="window.renderQuestionsCloud()">
                             <input type="text" id="f-tags" data-i18n-placeholder="inputTags" placeholder="Хэштеги (через запятую)">
                             <div class="form-date-row" id="note-date-row">
                                 <div class="custom-select-wrapper">
@@ -619,8 +705,9 @@
                             <div class="questions-cloud" id="q-cloud"></div>
                             
                             <div class="custom-q-input-wrap">
-                                <input type="text" id="custom-q-input" data-i18n-placeholder="inputCustomQ" placeholder="Введите свой вопрос">
-                                <button class="btn-full-width" onclick="window.addCustomQuestionFromInput()" data-i18n="btnCustomQ">+ Свой вопрос</button>
+                                <div style="font-size: 12px; font-weight: 500; color: var(--tg-hint); margin-bottom: 2px;" data-i18n="customQLabel">Не нашли подходящий вопрос?</div>
+                                <input type="text" id="custom-q-input" data-i18n-placeholder="inputCustomQ" placeholder="Напишите, что еще хотите обсудить..." oninput="document.getElementById('btn-add-custom-q').classList.toggle('ready', this.value.trim().length > 0)">
+                                <button id="btn-add-custom-q" class="btn-full-width" onclick="window.addCustomQuestionFromInput()" data-i18n="btnCustomQ">+ Добавить свой вопрос</button>
                             </div>
 
                             <div id="selected-questions"></div>
@@ -672,17 +759,39 @@
         const iconCheck = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
         const iconLink = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>`;
 
+        // Словари вопросов для разных жанров
+        const universalQuestions = ['q_about', 'q_insight', 'q_emotion', 'q_action', 'q_quote', 'q_recommend'];
+        
+        const genreKeywords = {
+            horror: ['ужас', 'хоррор', 'триллер', 'мрак', 'horror', 'thriller', 'misterio', 'terror', 'мистик'],
+            romance: ['роман', 'люб', 'отношен', 'romance', 'love', 'amor'],
+            psychology: ['психол', 'саморазвитие', 'мотивац', 'psychology', 'self', 'psicolog', 'mente'],
+            fantasy: ['фэнтез', 'фантастик', 'маги', 'дракон', 'fantasy', 'sci-fi', 'fantas', 'magia'],
+            detective: ['детектив', 'расследован', 'убийств', 'detective', 'mystery', 'crimen'],
+            business: ['бизнес', 'финанс', 'маркетинг', 'менеджмент', 'business', 'finance', 'negocio']
+        };
+
+        const genreToQuestions = {
+            default: Array.from({length: 20}, (_, i) => `q_def_${i+1}`),
+            horror: Array.from({length: 20}, (_, i) => `q_hor_${i+1}`),
+            romance: Array.from({length: 20}, (_, i) => `q_rom_${i+1}`),
+            psychology: Array.from({length: 20}, (_, i) => `q_psy_${i+1}`),
+            fantasy: Array.from({length: 20}, (_, i) => `q_fan_${i+1}`),
+            detective: Array.from({length: 20}, (_, i) => `q_det_${i+1}`),
+            business: Array.from({length: 20}, (_, i) => `q_bus_${i+1}`)
+        };
+
         const translations = {
             ru: {
                 navAll: "Все книги", navRating: "Рейтинг", navMonths: "Месяцы", navAuthors: "Авторы",
                 navTags: "Хэштеги", navCards: "Картотека", navGoal: "Цели", navDeferred: "Wishlist", btnAddBook: "+ Книга",
                 btnBack: "Назад", searchPlaceholder: "Поиск по названию или автору...", searchCardsPlaceholder: "Поиск по мыслям и темам...",
-                addBookCard: "Добавить книгу", planBookCard: "Запланируйте книгу",
+                addBookCard: "Добавить книгу", planBookCard: "Запланировать<br>книгу",
                 goalTitle: "Цель чтения на год", booksToGoal: "до цели!", keepReading: "Продолжайте читать",
                 goalReached: "Цель достигнута! 🎉", youRead: "Вы прочитали", inThisYear: "в этом году.",
                 addCover: "Добавить обложку", inputTitle: "Название книги", inputAuthor: "Автор (через запятую)",
                 inputGenre: "Жанр", inputTags: "Хэштеги (через запятую)", inputSource: "Ссылка на источник",
-                notesTitle: "Заметки и мысли", inputCustomQ: "Введите свой вопрос", btnCustomQ: "+ Свой вопрос",
+                notesTitle: "Заметки и мысли", inputCustomQ: "Напишите, что еще хотите обсудить...", btnCustomQ: "+ Добавить свой вопрос", customQLabel: "Не нашли подходящий вопрос?",
                 mediaTitle: "Медиа", btnAddPhotos: "Добавить фотографии", ratingTitle: "Рейтинг",
                 btnSaveNotes: "Сохранить конспект", btnPlanBook: "Запланировать книгу",
                 modalGoalTitle: "Годовая цель по чтению", booksPerYear: "книг в год", btnCancel: "Отменить",
@@ -690,20 +799,31 @@
                 btnNo: "Нет", btnYes: "Да", noNotes: "Нет заметок", noCards: "Картотека пуста. Сохраняйте подробные ответы (более 20 символов), и система сама найдет связи между ними.", alertEmptyTitle: "Пожалуйста, введите название книги",
                 unknownAuthor: "Неизвестный автор", notesPlaceholder: "Напишите свой ответ...",
                 months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
-                questions: ["О чем эта книга?", "В чем главный конфликт?", "Какую проблему раскрывает автор?", "Кому я сопереживал(а) и почему?", "Чей поступок вызвал больше всего вопросов?", "Что в книге кажется лишним или спорным?", "Какая цитата бьет прямо в цель?", "Что я понял(а) о себе через эту книгу?", "Кому и зачем её стоит прочесть?", "Инсайт (главная мысль)", "Эмоция (что чувствовал)", "Действие (что сделаю/подумаю иначе)"],
                 criteria: ["Сюжет и интрига", "Персонажи и их развитие", "Стиль и язык", "Эмоциональное воздействие", "Оригинальность", "Темп и динамика", "Атмосфера и мир", "Польза и познавательность", "Перечитываемость", "Концовка"],
-                deleteConfirmTitle: "Удалить книгу?", deleteConfirmMsg: "Вы уверены, что хотите удалить эту запись?", btnDelete: "Удалить"
+                deleteConfirmTitle: "Удалить книгу?", deleteConfirmMsg: "Вы уверены, что хотите удалить эту запись?", btnDelete: "Удалить",
+                tooltipAddQ: "Добавить вопрос", tooltipRemoveQ: "Убрать вопрос",
+                allQuestionsShown: "Все вопросы для этого жанра уже показаны!",
+                btnGenerateQ: "Подобрать вопросы",
+                
+                q_about: "О чем эта книга?", q_insight: "Инсайт (главная мысль)", q_emotion: "Эмоция (что чувствовал)", q_action: "Действие (что сделаю/подумаю иначе)", q_quote: "Какая цитата бьет прямо в цель?", q_recommend: "Кому и зачем её стоит прочесть?",
+                q_def_1: "В чем главный конфликт истории?", q_def_2: "Кому я сопереживал(а) больше всего и почему?", q_def_3: "Какую важную проблему поднимает автор?", q_def_4: "Чей поступок вызвал у меня больше всего вопросов?", q_def_5: "Оправдал ли финал мои ожидания?", q_def_6: "Самый запоминающийся эпизод книги?", q_def_7: "Что я понял(а) о себе, читая эту историю?", q_def_8: "Какая мысль заставила отложить книгу и задуматься?", q_def_9: "Что в сюжете кажется лишним или натянутым?", q_def_10: "Чья арка развития впечатлила больше всего?", q_def_11: "Какой второстепенный персонаж украл мое сердце?", q_def_12: "Если бы можно было изменить одну сцену, какую?", q_def_13: "Какой жизненный урок я вынес(ла) из прочитанного?", q_def_14: "Самая раздражающая деталь или черта героя?", q_def_15: "Насколько реалистичными и живыми кажутся диалоги?", q_def_16: "Какое 'послевкусие' и настроение оставляет книга?", q_def_17: "С кем из персонажей я бы мог(ла) подружиться?", q_def_18: "Был ли момент, когда хотелось бросить чтение?", q_def_19: "Что бы я спросил(а) у автора, если бы мы встретились?", q_def_20: "Если бы по книге снимали фильм, кто бы сыграл главные роли?",
+                q_hor_1: "Что напугало или держало в напряжении больше всего?", q_hor_2: "В чем истинная суть главной угрозы или монстра?", q_hor_3: "Самая жуткая, тяжелая или мерзкая сцена?", q_hor_4: "Как автор мастерски нагнетает саспенс?", q_hor_5: "Насколько логично и адекватно ведут себя жертвы?", q_hor_6: "Чувствовалась ли атмосфера полной безысходности?", q_hor_7: "Что бы я сделал(а) на месте главных героев ради выживания?", q_hor_8: "Оправдана ли жестокость сюжетом, или это просто шок-контент?", q_hor_9: "Был ли антагонист по-настоящему пугающим и убедительным?", q_hor_10: "Какой момент вызвал настоящие мурашки?", q_hor_11: "Это скорее психологический триллер или физический хоррор?", q_hor_12: "Главная слабость или фатальная ошибка выживших?", q_hor_13: "Удался ли автору эффект неожиданности (скримеры)?", q_hor_14: "Какая локация показалась самой зловещей?", q_hor_15: "Кто в итоге оказался бóльшим монстром: чудовище или люди?", q_hor_16: "Было ли мне по-настоящему жаль погибших персонажей?", q_hor_17: "Самый глупый или нелепый поступок героев?", q_hor_18: "Осталось ли чувство тревоги и паранойи после финала?", q_hor_19: "Если бы я попал(а) в этот мир, как долго бы я протянул(а)?", q_hor_20: "Какую сцену я еще долго не смогу выкинуть из головы?",
+                q_rom_1: "Как развивалась химия между главными героями?", q_rom_2: "Поверил(а) ли я в искренность их чувств?", q_rom_3: "Какое главное препятствие стояло на пути их отношений?", q_rom_4: "Были ли их отношения здоровыми (red и green flags)?", q_rom_5: "Самая романтичная или трогательная сцена?", q_rom_6: "Как любовь изменила их характеры и взгляды на жизнь?", q_rom_7: "Какие классические любовные клише (тропы) здесь использованы?", q_rom_8: "Момент, когда разбилось сердце или пробило на слезы?", q_rom_9: "Достаточно ли хорошо прописана мотивация их поступков?", q_rom_10: "Оправдал ли финал мои эмоциональные ожидания?", q_rom_11: "Кто из героев влюбился первым и как это показано?", q_rom_12: "Самая бесящая или нелепая ссора между ними?", q_rom_13: "Как второстепенные персонажи влияли на эту пару?", q_rom_14: "Если был любовный треугольник, за кого я болел(а) и почему?", q_rom_15: "Какой конкретный жест внимания или заботы мне запомнился?", q_rom_16: "Чья жертва ради любви была более весомой?", q_rom_17: "Их связь строилась больше на физическом влечении или духовном?", q_rom_18: "Не кажутся ли партнеры слишком идеализированными?", q_rom_19: "Пик наивысшего напряжения и драмы в отношениях?", q_rom_20: "Хотел(а) бы я пережить подобную историю любви в реальности?",
+                q_psy_1: "Главный инсайт о человеческой природе или мышлении?", q_psy_2: "Какую практику или совет можно применить в жизни уже сегодня?", q_psy_3: "Как эта книга сдвинула или расширила мою картину мира?", q_psy_4: "Какие токсичные установки или страхи книга помогает разрушить?", q_psy_5: "Какое когнитивное искажение или паттерн я узнал(а) в себе?", q_psy_6: "Насколько научен, обоснован и понятен подход автора?", q_psy_7: "В чем я категорически не согласен(на) с автором?", q_psy_8: "Узнал(а) ли я в примерах из книги своих знакомых?", q_psy_9: "Кому этот метод или философия точно НЕ подойдет?", q_psy_10: "Что из описанного я годами делал(а) неправильно?", q_psy_11: "Какое предложенное упражнение оказалось самым сложным морально?", q_psy_12: "Возникало ли у меня внутреннее сопротивление при чтении?", q_psy_13: "Как эти знания могут улучшить мое общение с людьми?", q_psy_14: "Главная причина наших внутренних конфликтов, по мнению автора?", q_psy_15: "Много ли в книге 'воды' или всё написано строго по делу?", q_psy_16: "Что автор говорит о личных границах и сепарации?", q_psy_17: "В какой главе или мысли я почувствовал(а) терапевтическое облегчение?", q_psy_18: "Как книга предлагает работать с чувством вины, стыда или тревоги?", q_psy_19: "Какое событие из своего прошлого я переосмыслил(а) благодаря книге?", q_psy_20: "Какую цитату стоит выписать и повесить на видное место?",
+                q_fan_1: "Как устроены главные законы и правила этого мира?", q_fan_2: "В чем заключалась ключевая трансформация главного героя?", q_fan_3: "Самая интересная и уникальная особенность местной магии или технологий?", q_fan_4: "Насколько логично и глубоко прописана история (лор) вселенной?", q_fan_5: "Какой сюжетный поворот перевернул всё с ног на голову?", q_fan_6: "Кто был самым могущественным существом и в чем его сила?", q_fan_7: "Какие расы, фракции или существа запомнились больше всего?", q_fan_8: "Какую цену герои вынуждены платить за использование своей силы?", q_fan_9: "Какая политическая или социальная интрига скрыта в сюжете?", q_fan_10: "Самое странное, жестокое или несправедливое правило этого мира?", q_fan_11: "Кто является настоящим злодеем в этом глобальном конфликте?", q_fan_12: "Самый эпичный и захватывающий боевой эпизод?", q_fan_13: "Насколько уникален этот сеттинг по сравнению с другими книгами жанра?", q_fan_14: "Какая локация, город или замок поразили мое воображение?", q_fan_15: "Есть ли явный дисбаланс сил (имбовость) у главных героев?", q_fan_16: "Какая местная легенда, миф или пророчество мне понравились?", q_fan_17: "Нарушает ли автор свои же установленные правила магии/мира?", q_fan_18: "Какой артефакт, способность или оружие я бы хотел(а) получить?", q_fan_19: "Хотел(а) бы я оказаться обычным жителем в этой вселенной?", q_fan_20: "Если это цикл, насколько сильно хочется немедленно читать продолжение?",
+                q_det_1: "Удалось ли мне разгадать главную тайну до того, как ее раскрыл автор?", q_det_2: "Насколько реалистичен, логичен и убедителен мотив преступника?", q_det_3: "Какая деталь с места преступления или улика стала решающей?", q_det_4: "Главная зацепка, которую я благополучно упустил(а) из виду?", q_det_5: "Самый напряженный и остросюжетный момент расследования?", q_det_6: "Играл ли автор честно с читателем, предоставляя все нужные факты?", q_det_7: "Насколько гениальным и продуманным был изначальный план убийцы?", q_det_8: "В чем заключается главная слабость, уязвимость или травма сыщика?", q_det_9: "Были ли фальшивые следы действительно сбивающими с толку?", q_det_10: "Понятна и стройна ли была логическая цепочка выводов детектива?", q_det_11: "Какое алиби оказалось самым хитроумным и как его разрушили?", q_det_12: "Симпатизировал(а) ли я преступнику после раскрытия его мотивов?", q_det_13: "Как сама жертва спровоцировала свое положение (и было ли такое)?", q_det_14: "Был ли у убийцы сообщник и насколько важна была его роль?", q_det_15: "Какая сцена допроса или конфронтации была самой психологичной?", q_det_16: "Самый глупый прокол или случайность, погубившая преступника?", q_det_17: "Насколько компетентной показана официальная полиция на фоне сыщика?", q_det_18: "Какая мрачная тайна из прошлого героев неожиданно всплыла наружу?", q_det_19: "Динамика сюжета: это медленное расследование или динамичный экшен?", q_det_20: "Кажется ли итоговое наказание для виновного справедливым?",
+                q_bus_1: "Какую стратегию, идею или фреймворк я могу забрать в свою работу?", q_bus_2: "Главный и самый ценный урок по лидерству и управлению?", q_bus_3: "Самый показательный и применимый на практике кейс из книги?", q_bus_4: "Какая описанная автором ошибка может уберечь меня от провала?", q_bus_5: "В чем кроется главный секрет масштабирования и роста по версии автора?", q_bus_6: "Какая метрика или KPI выделяется как самая ключевая?", q_bus_7: "Окупилось ли время, потраченное на чтение (каков личный ROI)?", q_bus_8: "Применима ли описанная бизнес-модель в моих текущих реалиях?", q_bus_9: "Как этот подход меняет мышление по отношению к клиентам и продажам?", q_bus_10: "Какое внутреннее убеждение мешало мне расти в доходах или карьере?", q_bus_11: "Что конкретно говорится о делегировании, процессах и контроле?", q_bus_12: "Главный риск или узкое горлышко, о котором предупреждает книга?", q_bus_13: "Как автор рекомендует выстраивать отношения внутри команды?", q_bus_14: "Насколько этично и экологично описанное ведение бизнеса?", q_bus_15: "Как этот материал влияет на личную продуктивность и тайм-менеджмент?", q_bus_16: "Какую конкретную главу стоит обязательно дать прочитать партнеру или боссу?", q_bus_17: "Как выстраивается воронка продаж или маркетинг в приведенных примерах?", q_bus_18: "Какой совет из книги показался мне устаревшим или оторванным от реальности?", q_bus_19: "Как, согласно книге, правильно отстраиваться от конкурентов?", q_bus_20: "Назови 3 конкретных шага, которые я внедрю в понедельник?"
             },
             en: {
                 navAll: "All books", navRating: "Rating", navMonths: "Months", navAuthors: "Authors",
                 navTags: "Hashtags", navCards: "Cards", navGoal: "Goals", navDeferred: "Wishlist", btnAddBook: "+ Book",
                 btnBack: "Back", searchPlaceholder: "Search by title or author...", searchCardsPlaceholder: "Search thoughts and themes...",
-                addBookCard: "Add book", planBookCard: "Plan a book",
+                addBookCard: "Add book", planBookCard: "Plan a<br>book",
                 goalTitle: "Yearly reading goal", booksToGoal: "to goal!", keepReading: "Keep reading",
                 goalReached: "Goal reached! 🎉", youRead: "You have read", inThisYear: "this year.",
                 addCover: "Add cover", inputTitle: "Book title", inputAuthor: "Author (comma separated)",
                 inputGenre: "Genre", inputTags: "Hashtags (comma separated)", inputSource: "Source link",
-                notesTitle: "Notes & Thoughts", inputCustomQ: "Enter custom question", btnCustomQ: "+ Custom question",
+                notesTitle: "Notes & Thoughts", inputCustomQ: "Write what else you'd like to discuss...", btnCustomQ: "+ Add custom question", customQLabel: "Didn't find a suitable question?",
                 mediaTitle: "Media", btnAddPhotos: "Add photos", ratingTitle: "Rating",
                 btnSaveNotes: "Save notes", btnPlanBook: "Plan book",
                 modalGoalTitle: "Yearly reading goal", booksPerYear: "books/year", btnCancel: "Cancel",
@@ -711,20 +831,31 @@
                 btnNo: "No", btnYes: "Yes", noNotes: "No notes", noCards: "Card index is empty. Write detailed answers (>20 chars), and the system will link them automatically.", alertEmptyTitle: "Please enter the book title",
                 unknownAuthor: "Unknown author", notesPlaceholder: "Write your answer...",
                 months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                questions: ["What is this book about?", "What is the main conflict?", "What problem does the author reveal?", "Who did I empathize with and why?", "Whose action raised the most questions?", "What seems redundant or controversial?", "Which quote hits the mark?", "What did I learn about myself?", "Who should read it and why?", "Insight (main thought)", "Emotion (what I felt)", "Action (what I'll do differently)"],
                 criteria: ["Plot & Intrigue", "Characters & Development", "Style & Language", "Emotional Impact", "Originality", "Pacing & Dynamics", "Atmosphere & World", "Usefulness & Knowledge", "Re-readability", "Ending"],
-                deleteConfirmTitle: "Delete book?", deleteConfirmMsg: "Are you sure you want to delete this entry?", btnDelete: "Delete"
+                deleteConfirmTitle: "Delete book?", deleteConfirmMsg: "Are you sure you want to delete this entry?", btnDelete: "Delete",
+                tooltipAddQ: "Add question", tooltipRemoveQ: "Remove question",
+                allQuestionsShown: "All questions for this genre have been shown!",
+                btnGenerateQ: "Pick questions",
+                
+                q_about: "What is this book about?", q_insight: "Insight (main thought)", q_emotion: "Emotion (what I felt)", q_action: "Action (what I'll do differently)", q_quote: "Which quote hits the mark?", q_recommend: "Who should read it and why?",
+                q_def_1: "What is the main conflict of the story?", q_def_2: "Who did I empathize with the most and why?", q_def_3: "What important problem does the author raise?", q_def_4: "Whose action raised the most questions for me?", q_def_5: "Did the ending live up to my expectations?", q_def_6: "What is the most memorable episode of the book?", q_def_7: "What did I learn about myself reading this story?", q_def_8: "Which thought made me pause reading and reflect?", q_def_9: "What in the plot seems redundant or forced?", q_def_10: "Whose character arc impressed me the most?", q_def_11: "Which side character stole my heart?", q_def_12: "If I could change one scene, which one would it be?", q_def_13: "What life lesson did I learn from the reading?", q_def_14: "The most annoying detail or character trait?", q_def_15: "How realistic and alive do the dialogues feel?", q_def_16: "What 'aftertaste' and mood does the book leave?", q_def_17: "Which character could I be friends with?", q_def_18: "Was there a moment I wanted to drop the book?", q_def_19: "What would I ask the author if we met?", q_def_20: "If they made a movie, who would play the main roles?",
+                q_hor_1: "What scared me or kept me in suspense the most?", q_hor_2: "What is the true nature of the main threat or monster?", q_hor_3: "The creepiest, heaviest, or most disgusting scene?", q_hor_4: "How does the author masterfully build suspense?", q_hor_5: "How logical and adequate is the victims' behavior?", q_hor_6: "Did it feel like an atmosphere of utter hopelessness?", q_hor_7: "What would I do in the heroes' place to survive?", q_hor_8: "Is the cruelty justified by the plot, or is it just shock content?", q_hor_9: "Was the antagonist truly terrifying and convincing?", q_hor_10: "Which moment gave me genuine goosebumps?", q_hor_11: "Is this more of a psychological thriller or physical horror?", q_hor_12: "The main weakness or fatal flaw of the survivors?", q_hor_13: "Did the jump scares and unexpected twists work?", q_hor_14: "Which location seemed the most sinister?", q_hor_15: "Who turned out to be the bigger monster: the creature or the humans?", q_hor_16: "Did I genuinely feel sorry for the casualties?", q_hor_17: "The dumbest or most ridiculous action by the heroes?", q_hor_18: "Did a feeling of anxiety and paranoia linger after the ending?", q_hor_19: "If I fell into this world, how long would I last?", q_hor_20: "Which scene will I not be able to get out of my head for a long time?",
+                q_rom_1: "How did the chemistry between the main characters develop?", q_rom_2: "Did I believe in the sincerity of their feelings?", q_rom_3: "What was the main obstacle standing in the way of their relationship?", q_rom_4: "Was their relationship healthy (red and green flags)?", q_rom_5: "The most romantic or touching scene?", q_rom_6: "How did love change their characters and outlooks on life?", q_rom_7: "What classic romance tropes are used here?", q_rom_8: "The moment that broke my heart or brought me to tears?", q_rom_9: "Is the motivation for their actions written well enough?", q_rom_10: "Did the ending deliver on my emotional expectations?", q_rom_11: "Who fell in love first and how is it shown?", q_rom_12: "The most annoying or ridiculous argument between them?", q_rom_13: "How did side characters influence this couple?", q_rom_14: "If there was a love triangle, who did I root for and why?", q_rom_15: "What specific gesture of attention or care do I remember?", q_rom_16: "Whose sacrifice for love was more significant?", q_rom_17: "Was their bond built more on physical attraction or a spiritual one?", q_rom_18: "Do the partners seem too idealized?", q_rom_19: "The peak of highest tension and drama in the relationship?", q_rom_20: "Would I want to experience a similar love story in reality?",
+                q_psy_1: "Main insight about human nature or mindset?", q_psy_2: "What practice or advice can be applied in life today?", q_psy_3: "How did this book shift or expand my worldview?", q_psy_4: "What toxic beliefs or fears does the book help to destroy?", q_psy_5: "Which cognitive bias or pattern did I recognize in myself?", q_psy_6: "How scientific, sound, and understandable is the author's approach?", q_psy_7: "What do I strongly disagree with the author about?", q_psy_8: "Did I recognize my acquaintances in the examples from the book?", q_psy_9: "Who is this method or philosophy definitely NOT for?", q_psy_10: "What have I been doing wrong for years based on what's described?", q_psy_11: "Which suggested exercise turned out to be the hardest morally?", q_psy_12: "Did I experience internal resistance while reading?", q_psy_13: "How can this knowledge improve my communication with people?", q_psy_14: "The main cause of our internal conflicts, according to the author?", q_psy_15: "Is there a lot of 'fluff' in the book or is everything strictly to the point?", q_psy_16: "What does the author say about personal boundaries and separation?", q_psy_17: "In which chapter or thought did I feel therapeutic relief?", q_psy_18: "How does the book suggest dealing with guilt, shame, or anxiety?", q_psy_19: "What event from my past did I rethink thanks to the book?", q_psy_20: "Which quote is worth writing down and hanging in plain sight?",
+                q_fan_1: "How do the main laws and rules of this world work?", q_fan_2: "What was the key transformation of the main character?", q_fan_3: "The most interesting and unique feature of local magic or technology?", q_fan_4: "How logically and deeply is the history (lore) of the universe written?", q_fan_5: "What plot twist turned everything upside down?", q_fan_6: "Who was the most powerful being and what is their strength?", q_fan_7: "Which races, factions, or creatures were the most memorable?", q_fan_8: "What price are heroes forced to pay to use their power?", q_fan_9: "What political or social intrigue is hidden in the plot?", q_fan_10: "The strangest, cruellest, or most unfair rule of this world?", q_fan_11: "Who is the true villain in this global conflict?", q_fan_12: "The most epic and thrilling battle episode?", q_fan_13: "How unique is this setting compared to other books in the genre?", q_fan_14: "Which location, city, or castle amazed my imagination?", q_fan_15: "Is there an obvious power imbalance (OP) among the main characters?", q_fan_16: "Which local legend, myth, or prophecy did I like?", q_fan_17: "Does the author break their own established rules of magic/the world?", q_fan_18: "What artifact, ability, or weapon would I like to get?", q_fan_19: "Would I want to end up as an ordinary citizen in this universe?", q_fan_20: "If it's a series, how strongly do I want to immediately read the sequel?",
+                q_det_1: "Did I manage to solve the main mystery before the author revealed it?", q_det_2: "How realistic, logical, and convincing is the criminal's motive?", q_det_3: "What detail from the crime scene or clue became decisive?", q_det_4: "The main lead that I successfully overlooked?", q_det_5: "The most tense and action-packed moment of the investigation?", q_det_6: "Did the author play fair with the reader by providing all the necessary facts?", q_det_7: "How brilliant and thought-out was the killer's original plan?", q_det_8: "What is the main weakness, vulnerability, or trauma of the detective?", q_det_9: "Were the false leads (red herrings) truly confusing?", q_det_10: "Was the logical chain of the detective's deductions clear and coherent?", q_det_11: "Which alibi turned out to be the most cunning and how was it broken?", q_det_12: "Did I sympathize with the criminal after their motives were revealed?", q_det_13: "How did the victim themselves provoke their situation (and did they)?", q_det_14: "Did the killer have an accomplice and how important was their role?", q_det_15: "Which interrogation or confrontation scene was the most psychological?", q_det_16: "The dumbest blunder or accident that ruined the criminal?", q_det_17: "How competent is the official police shown against the backdrop of the detective?", q_det_18: "What dark secret from the characters' past unexpectedly surfaced?", q_det_19: "Plot pacing: is it a slow burn investigation or dynamic action?", q_det_20: "Does the final punishment for the guilty seem fair?",
+                q_bus_1: "What strategy, idea, or framework can I take into my work?", q_bus_2: "The main and most valuable lesson on leadership and management?", q_bus_3: "The most illustrative and practically applicable case study from the book?", q_bus_4: "What mistake described by the author can save me from failure?", q_bus_5: "What is the main secret to scaling and growth according to the author?", q_bus_6: "Which metric or KPI stands out as the most crucial?", q_bus_7: "Did the time spent reading pay off (what is the personal ROI)?", q_bus_8: "Is the described business model applicable in my current reality?", q_bus_9: "How does this approach change the mindset towards clients and sales?", q_bus_10: "What internal belief was stopping me from growing in income or career?", q_bus_11: "What specifically is said about delegation, processes, and control?", q_bus_12: "The main risk or bottleneck the book warns about?", q_bus_13: "How does the author recommend building relationships within the team?", q_bus_14: "How ethical and eco-friendly is the described business conduct?", q_bus_15: "How does this material affect personal productivity and time management?", q_bus_16: "Which specific chapter should I definitely give to a partner or boss to read?", q_bus_17: "How is the sales funnel or marketing built in the given examples?", q_bus_18: "Which advice from the book seemed outdated or detached from reality to me?", q_bus_19: "How, according to the book, to properly differentiate from competitors?", q_bus_20: "Name 3 specific steps that I will implement on Monday?"
             },
             es: {
                 navAll: "Todos", navRating: "Ranking", navMonths: "Meses", navAuthors: "Autores",
                 navTags: "Hashtags", navCards: "Tarjetas", navGoal: "Objetivos", navDeferred: "Wishlist", btnAddBook: "+ Libro",
                 btnBack: "Atrás", searchPlaceholder: "Buscar por título o autor...", searchCardsPlaceholder: "Buscar pensamientos y temas...",
-                addBookCard: "Añadir libro", planBookCard: "Planear libro",
+                addBookCard: "Añadir libro", planBookCard: "Planear<br>libro",
                 goalTitle: "Meta de lectura anual", booksToGoal: "para la meta!", keepReading: "Sigue leyendo",
                 goalReached: "¡Meta alcanzada! 🎉", youRead: "Has leído", inThisYear: "este año.",
                 addCover: "Añadir portada", inputTitle: "Título del libro", inputAuthor: "Autor (separados por coma)",
                 inputGenre: "Género", inputTags: "Hashtags (separados por coma)", inputSource: "Enlace web",
-                notesTitle: "Notas y pensamientos", inputCustomQ: "Escribe tu pregunta", btnCustomQ: "+ Tu pregunta",
+                notesTitle: "Notas y pensamientos", inputCustomQ: "Escriba qué más le gustaría discutir...", btnCustomQ: "+ Añadir pregunta propia", customQLabel: "¿No encontró la pregunta adecuada?",
                 mediaTitle: "Multimedia", btnAddPhotos: "Añadir fotos", ratingTitle: "Ranking",
                 btnSaveNotes: "Guardar notas", btnPlanBook: "Planear libro",
                 modalGoalTitle: "Meta de lectura anual", booksPerYear: "libros al año", btnCancel: "Cancelar",
@@ -732,9 +863,20 @@
                 btnNo: "No", btnYes: "Sí", noNotes: "Sin notas", noCards: "No hay tarjetas. Escribe respuestas largas (>20 car.) y el sistema las vinculará.", alertEmptyTitle: "Por favor, introduce el título del libro",
                 unknownAuthor: "Autor desconocido", notesPlaceholder: "Escribe tu respuesta...",
                 months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-                questions: ["¿De qué trata este libro?", "¿Cuál es el conflicto principal?", "¿Qué problema revela el autor?", "¿Con quién empaticé y por qué?", "¿Qué acción generó más dudas?", "¿Qué parece redundante o controvertido?", "¿Qué cita da en el blanco?", "¿Qué aprendí sobre mí?", "¿Quién debería leerlo y por qué?", "Perspectiva (pensamiento principal)", "Emoción (lo que sentí)", "Acción (lo que haré diferente)"],
                 criteria: ["Trama e intriga", "Personajes y desarrollo", "Estilo y lenguaje", "Impacto emocional", "Originalidad", "Ritmo y dinámica", "Atmósfera y mundo", "Utilidad y conocimiento", "Relectura", "Final"],
-                deleteConfirmTitle: "¿Eliminar libro?", deleteConfirmMsg: "¿Estás seguro de que quieres eliminar esta entrada?", btnDelete: "Eliminar"
+                deleteConfirmTitle: "¿Eliminar libro?", deleteConfirmMsg: "¿Estás seguro de que quieres eliminar esta entrada?", btnDelete: "Eliminar",
+                tooltipAddQ: "Añadir pregunta", tooltipRemoveQ: "Quitar pregunta",
+                allQuestionsShown: "¡Se han mostrado todas las preguntas para este género!",
+                btnGenerateQ: "Elegir preguntas",
+                
+                q_about: "¿De qué trata este libro?", q_insight: "Perspectiva (pensamiento principal)", q_emotion: "Emoción (lo que sentí)", q_action: "Acción (lo que haré diferente)", q_quote: "¿Qué cita da en el blanco?", q_recommend: "¿Quién debería leerlo y por qué?",
+                q_def_1: "¿Cuál es el conflicto principal de la historia?", q_def_2: "¿Con quién empaticé más y por qué?", q_def_3: "¿Qué problema importante plantea el autor?", q_def_4: "¿Qué acción me generó más dudas?", q_def_5: "¿Cumplió el final con mis expectativas?", q_def_6: "¿Cuál es el episodio más memorable del libro?", q_def_7: "¿Qué aprendí sobre mí al leer esta historia?", q_def_8: "¿Qué pensamiento me hizo pausar la lectura y reflexionar?", q_def_9: "¿Qué en la trama parece redundante o forzado?", q_def_10: "¿Qué arco de personaje me impresionó más?", q_def_11: "¿Qué personaje secundario robó mi corazón?", q_def_12: "Si pudiera cambiar una escena, ¿cuál sería?", q_def_13: "¿Qué lección de vida saqué de la lectura?", q_def_14: "¿El detalle o rasgo de personaje más molesto?", q_def_15: "¿Qué tan realistas y vivos se sienten los diálogos?", q_def_16: "¿Qué 'sabor de boca' y estado de ánimo deja el libro?", q_def_17: "¿De qué personaje podría ser amigo(a)?", q_def_18: "¿Hubo un momento en que quise dejar de leer?", q_def_19: "¿Qué le preguntaría al autor si nos conociéramos?", q_def_20: "Si hicieran una película del libro, ¿quién interpretaría los papeles principales?",
+                q_hor_1: "¿Qué me asustó o me mantuvo en tensión más?", q_hor_2: "¿Cuál es la verdadera naturaleza de la amenaza principal o monstruo?", q_hor_3: "¿La escena más espeluznante, pesada o repugnante?", q_hor_4: "¿Cómo el autor construye magistralmente el suspenso?", q_hor_5: "¿Qué tan lógico y adecuado es el comportamiento de las víctimas?", q_hor_6: "¿Se sentía una atmósfera de total desesperanza?", q_hor_7: "¿Qué haría yo en el lugar de los protagonistas para sobrevivir?", q_hor_8: "¿La crueldad está justificada por la trama o es solo valor de choque?", q_hor_9: "¿Fue el antagonista verdaderamente aterrador y convincente?", q_hor_10: "¿Qué momento me puso genuinamente la piel de gallina?", q_hor_11: "¿Es esto más un thriller psicológico o un horror físico?", q_hor_12: "¿La principal debilidad o error fatal de los sobrevivientes?", q_hor_13: "¿Funcionaron los sustos (jump scares) y giros inesperados?", q_hor_14: "¿Qué locación pareció la más siniestra?", q_hor_15: "¿Quién resultó ser el mayor monstruo: la criatura o los humanos?", q_hor_16: "¿Sentí genuina pena por las víctimas?", q_hor_17: "¿La acción más estúpida o ridícula de los héroes?", q_hor_18: "¿Quedó un sentimiento de ansiedad y paranoia después del final?", q_hor_19: "Si cayera en este mundo, ¿cuánto tiempo duraría?", q_hor_20: "¿Qué escena no podré sacarme de la cabeza por mucho tiempo?",
+                q_rom_1: "¿Cómo se desarrolló la química entre los protagonistas?", q_rom_2: "¿Creí en la sinceridad de sus sentimientos?", q_rom_3: "¿Cuál fue el principal obstáculo en el camino de su relación?", q_rom_4: "¿Eran sus relaciones sanas (red y green flags)?", q_rom_5: "¿La escena más romántica o conmovedora?", q_rom_6: "¿Cómo cambió el amor sus caracteres y perspectivas de la vida?", q_rom_7: "¿Qué clichés románticos clásicos (tropos) se utilizan aquí?", q_rom_8: "¿El momento en que se rompió el corazón o me hizo llorar?", q_rom_9: "¿Está la motivación de sus acciones lo suficientemente bien escrita?", q_rom_10: "¿El final cumplió mis expectativas emocionales?", q_rom_11: "¿Quién se enamoró primero y cómo se muestra?", q_rom_12: "¿La discusión más molesta o ridícula entre ellos?", q_rom_13: "¿Cómo influyeron los personajes secundarios en esta pareja?", q_rom_14: "Si hubo un triángulo amoroso, ¿a quién apoyé y por qué?", q_rom_15: "¿Qué gesto específico de atención o cuidado recuerdo?", q_rom_16: "¿El sacrificio de quién por amor fue más significativo?", q_rom_17: "¿Su vínculo se basaba más en la atracción física o espiritual?", q_rom_18: "¿Padecen los socios de estar demasiado idealizados?", q_rom_19: "¿El pico de máxima tensión y drama en la relación?", q_rom_20: "¿Me gustaría experimentar una historia de amor similar en la realidad?",
+                q_psy_1: "¿Principal insight sobre la naturaleza humana o la mentalidad?", q_psy_2: "¿Qué práctica o consejo se puede aplicar en la vida hoy mismo?", q_psy_3: "¿Cómo este libro cambió o amplió mi visión del mundo?", q_psy_4: "¿Qué creencias o miedos tóxicos ayuda el libro a destruir?", q_psy_5: "¿Qué sesgo o patrón cognitivo reconocí en mí mismo(a)?", q_psy_6: "¿Qué tan científico, sólido y comprensible es el enfoque del autor?", q_psy_7: "¿En qué estoy categóricamente en desacuerdo con el autor?", q_psy_8: "¿Reconocí a mis conocidos en los ejemplos del libro?", q_psy_9: "¿Para quién definitivamente NO es este método o filosofía?", q_psy_10: "¿Qué de lo descrito he estado haciendo mal durante años?", q_psy_11: "¿Qué ejercicio sugerido resultó ser el más difícil moralmente?", q_psy_12: "¿Experimenté resistencia interna al leer?", q_psy_13: "¿Cómo puede este conocimiento mejorar mi comunicación con las personas?", q_psy_14: "¿La principal causa de nuestros conflictos internos, según el autor?", q_psy_15: "¿Hay mucha 'paja' en el libro o está escrito estrictamente al grano?", q_psy_16: "¿Qué dice el autor sobre los límites personales y la separación?", q_psy_17: "¿En qué capítulo o pensamiento sentí un alivio terapéutico?", q_psy_18: "¿Cómo sugiere el libro lidiar con la culpa, la vergüenza o la ansiedad?", q_psy_19: "¿Qué evento de mi pasado replanteé gracias al libro?", q_psy_20: "¿Qué cita vale la pena escribir y colgar a la vista?",
+                q_fan_1: "¿Cómo funcionan las principales leyes y reglas de este mundo?", q_fan_2: "¿Cuál fue la transformación clave del protagonista?", q_fan_3: "¿La característica más interesante y única de la magia o tecnología local?", q_fan_4: "¿Qué tan lógica y profundamente está escrita la historia (lore) del universo?", q_fan_5: "¿Qué giro de la trama puso todo patas arriba?", q_fan_6: "¿Quién era el ser más poderoso y cuál es su fuerza?", q_fan_7: "¿Qué razas, facciones o criaturas fueron las más memorables?", q_fan_8: "¿Qué precio se ven obligados a pagar los héroes por usar su poder?", q_fan_9: "¿Qué intriga política o social se esconde en la trama?", q_fan_10: "¿La regla más extraña, cruel o injusta de este mundo?", q_fan_11: "¿Quién es el verdadero villano en este conflicto global?", q_fan_12: "¿El episodio de batalla más épico y emocionante?", q_fan_13: "¿Qué tan único es este escenario en comparación con otros libros del género?", q_fan_14: "¿Qué locación, ciudad o castillo asombró mi imaginación?", q_fan_15: "¿Hay un evidente desequilibrio de poder (OP) entre los protagonistas?", q_fan_16: "¿Qué leyenda, mito o profecía local me gustó?", q_fan_17: "¿El autor rompe sus propias reglas establecidas de magia/mundo?", q_fan_18: "¿Qué artefacto, habilidad o arma me gustaría obtener?", q_fan_19: "¿Me gustaría terminar como un ciudadano común en este universo?", q_fan_20: "Si es una serie, ¿qué tantas ganas tengo de leer inmediatamente la secuela?",
+                q_det_1: "¿Logré resolver el misterio principal antes de que el autor lo revelara?", q_det_2: "¿Qué tan realista, lógico y convincente es el motivo del criminal?", q_det_3: "¿Qué detalle de la escena del crimen o pista se volvió decisivo?", q_det_4: "¿La pista principal que pasé por alto con éxito?", q_det_5: "¿El momento más tenso y lleno de acción de la investigación?", q_det_6: "¿El autor jugó limpio con el lector proporcionando todos los hechos necesarios?", q_det_7: "¿Qué tan brillante y bien pensado fue el plan original del asesino?", q_det_8: "¿Cuál es la principal debilidad, vulnerabilidad o trauma del detective?", q_det_9: "¿Fueron las pistas falsas (red herrings) verdaderamente confusas?", q_det_10: "¿Fue la cadena lógica de deducciones del detective clara y coherente?", q_det_11: "¿Qué coartada resultó ser la más astuta y cómo se rompió?", q_det_12: "¿Empaticé con el criminal después de que se revelaran sus motivos?", q_det_13: "¿Cómo provocó la propia víctima su situación (y lo hizo)?", q_det_14: "¿El asesino tenía un cómplice y qué tan importante fue su papel?", q_det_15: "¿Qué escena de interrogatorio o confrontación fue la más psicológica?", q_det_16: "¿El error más tonto o accidente que arruinó al criminal?", q_det_17: "¿Qué tan competente se muestra a la policía oficial en contraste con el detective?", q_det_18: "¿Qué oscuro secreto del pasado de los personajes salió a la superficie inesperadamente?", q_det_19: "Ritmo de la trama: ¿es una investigación a fuego lento o acción dinámica?", q_det_20: "¿Parece justo el castigo final para el culpable?",
+                q_bus_1: "¿Qué estrategia, idea o marco puedo llevar a mi trabajo?", q_bus_2: "¿La lección principal y más valiosa sobre liderazgo y gestión?", q_bus_3: "¿El caso de estudio más ilustrativo y aplicable del libro?", q_bus_4: "¿Qué error descrito por el autor puede salvarme del fracaso?", q_bus_5: "¿Cuál es el secreto principal de la escalabilidad y el crecimiento según el autor?", q_bus_6: "¿Qué métrica o KPI destaca como el más crucial?", q_bus_7: "¿Valió la pena el tiempo invertido en la lectura (cuál es el ROI personal)?", q_bus_8: "¿Es aplicable el modelo de negocio descrito en mi realidad actual?", q_bus_9: "¿Cómo cambia este enfoque la mentalidad hacia los clientes y las ventas?", q_bus_10: "¿Qué creencia interna me impedía crecer en ingresos o carrera?", q_bus_11: "¿Qué dice específicamente sobre la delegación, los procesos y el control?", q_bus_12: "¿El riesgo principal o cuello de botella del que advierte el libro?", q_bus_13: "¿Cómo recomienda el autor construir relaciones dentro del equipo?", q_bus_14: "¿Qué tan ética y ecológica es la conducta comercial descrita?", q_bus_15: "¿Cómo afecta este material a la productividad personal y gestión del tiempo?", q_bus_16: "¿Qué capítulo específico debo dar sin falta a un socio o jefe para leer?", q_bus_17: "¿Cómo se construye el embudo de ventas o marketing en los ejemplos dados?", q_bus_18: "¿Qué consejo del libro me pareció desactualizado o desconectado de la realidad?", q_bus_19: "¿Cómo, según el libro, diferenciarse adecuadamente de la competencia?", q_bus_20: "Nombra 3 pasos específicos que implementaré el lunes."
             }
         };
 
@@ -782,12 +924,19 @@
             }
         }
 
-        function getLocalizedQuestion(qKey) {
-            for (const lang in translations) {
-                const idx = translations[lang].questions.indexOf(qKey);
-                if (idx !== -1) return translations[currentLang].questions[idx];
+        // Вспомогательная функция для получения ключа по русской строке (для обратной совместимости)
+        function getKeyByRuString(ruStr) {
+            for (const key in translations['ru']) {
+                if (key.startsWith('q_') && translations['ru'][key] === ruStr) return key;
             }
-            return qKey;
+            return null;
+        }
+
+        function getLocalizedQuestion(qKey) {
+            // Если передан старый русский стринг, ищем его ключ
+            const key = getKeyByRuString(qKey);
+            if (key && translations[currentLang][key]) return translations[currentLang][key];
+            return qKey; // Возвращаем как есть (кастомный вопрос)
         }
 
         let books = [];
@@ -798,6 +947,7 @@
         let selectedCoverBase64 = null;
         let currentYearGoal = 20;
         let currentMediaFiles = [];
+        let currentExtraQKeys = []; // Для хранения сгенерированных вопросов по жанру
 
         function loadInitialDataIfEmpty() {
             if (!localStorage.getItem('reading_journal_v2')) {
@@ -1238,6 +1388,57 @@
             if (val && val > 0) { currentYearGoal = val; localStorage.setItem('reading_goal_v2', currentYearGoal); window.closeGoalModal(); renderGoalTab(); if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success'); }
         };
 
+        // Вспомогательная функция, которая считает, сколько вопросов осталось для введенного жанра
+        function getAvailableQuestionsForCurrentGenre() {
+            const genreEl = document.getElementById('f-genre');
+            const genreStr = genreEl ? genreEl.value.toLowerCase().trim() : '';
+            let matchedCategory = 'default';
+            
+            for (const [cat, keywords] of Object.entries(genreKeywords)) {
+                if (keywords.some(kw => genreStr.includes(kw))) {
+                    matchedCategory = cat;
+                    break;
+                }
+            }
+            
+            const pool = genreToQuestions[matchedCategory] || genreToQuestions['default'];
+            return pool.filter(k => !currentExtraQKeys.includes(k));
+        }
+
+        function renderQuestionsCloud() {
+            const container = document.getElementById('q-cloud');
+            let cloudKeys = [...universalQuestions, ...currentExtraQKeys];
+            
+            // Проверяем уже выбранные вопросы, чтобы они не пропали из облака
+            document.querySelectorAll('.q-item').forEach(item => {
+                if (item.id.startsWith('q-')) {
+                    const k = item.id.substring(2);
+                    if (!cloudKeys.includes(k)) cloudKeys.push(k);
+                }
+            });
+
+            const available = getAvailableQuestionsForCurrentGenre();
+            const isExhausted = available.length === 0;
+
+            container.innerHTML = cloudKeys.map(k => {
+                const active = !!document.getElementById('q-' + k);
+                return `<div class="q-chip ${active ? 'selected' : ''}" id="chip-${k}" data-tooltip="${active ? t('tooltipRemoveQ') : t('tooltipAddQ')}" onclick="window.toggleDynamicQuestion(this, '${k}')">${t(k)}</div>`;
+            }).join('') + `<div class="q-chip generate-btn ${isExhausted ? 'disabled' : ''}" ${isExhausted ? '' : 'onclick="window.generateGenreQuestions()"'}><span style="font-size:16px; margin-top:-2px; ${isExhausted ? 'opacity: 0.5;' : ''}">🎲</span> ${t('btnGenerateQ')}</div>`;
+        }
+
+        window.generateGenreQuestions = () => {
+            const available = getAvailableQuestionsForCurrentGenre();
+            if (available.length === 0) return; // Защита от кликов, если вопросы закончились
+
+            // Берём следующие 5 вопросов по порядку (БЕЗ РАНДОМА)
+            const toAdd = available.slice(0, 5);
+            
+            toAdd.forEach(k => currentExtraQKeys.push(k));
+            
+            renderQuestionsCloud();
+            if (window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.selectionChanged();
+        };
+
         window.openAddForm = (bookId = null, prefillData = null) => {
             document.getElementById('cover-input').value = ''; 
             currentEditingId = bookId; isDeferredMode = false; window.switchTab('add');
@@ -1258,6 +1459,7 @@
             document.getElementById('f-genre').value = book?.genre || '';
             document.getElementById('f-tags').value = (book?.tags || []).join(', ');
             document.getElementById('selected-questions').innerHTML = '';
+            currentExtraQKeys = []; // Сбрасываем сгенерированные вопросы
             
             selectedCoverBase64 = book?.img || null;
             document.getElementById('cover-preview-container').innerHTML = selectedCoverBase64 ? `<img src="${selectedCoverBase64}">` : `<span style="font-size: 24px; margin-bottom: 8px; font-weight: 300;">+</span><span>${t('addCover')}</span>`;
@@ -1265,11 +1467,23 @@
             currentMediaFiles = book?.media || [];
             renderMediaEditList();
             
-            document.getElementById('q-cloud').innerHTML = translations[currentLang].questions.map((q, i) => { 
-                const ruQ = translations['ru'].questions[i];
-                const active = book && book.answers && (book.answers[ruQ] || book.answers[q]); 
-                return `<div class="q-chip ${active ? 'selected' : ''}" id="chip-q-${i}" onclick="window.toggleQuestion(this, ${i})">${q}</div>`; 
-            }).join('');
+            // Восстанавливаем ответы
+            if (book && !prefillData) { 
+                monthSel.value = book.month; 
+                document.getElementById('f-year').value = book.year; 
+                if (book.answers) {
+                    Object.entries(book.answers).forEach(([ruKey, a]) => {
+                        const key = getKeyByRuString(ruKey);
+                        if (key) {
+                            addQuestionItem('q-' + key, t(key), ruKey, a, false);
+                        } else {
+                            addQuestionItem('custom-' + Math.random(), ruKey, ruKey, a, true);
+                        }
+                    });
+                }
+            }
+
+            renderQuestionsCloud(); // Генерируем облако с учетом восстановленных ответов
             
             document.getElementById('ratings-list').innerHTML = translations[currentLang].criteria.map((c, i) => { 
                 const val = (book && book.criteria) ? book.criteria[i] : 5; 
@@ -1283,24 +1497,6 @@
                     </div>
                 </div>`; 
             }).join('');
-            
-            if (book && !prefillData) { 
-                monthSel.value = book.month; 
-                document.getElementById('f-year').value = book.year; 
-                if (book.answers) {
-                    Object.entries(book.answers).forEach(([qKey, a]) => {
-                        let isStandard = false;
-                        for (const lang in translations) {
-                            const idx = translations[lang].questions.indexOf(qKey);
-                            if (idx !== -1) {
-                                addQuestionItem('q-' + idx, translations[currentLang].questions[idx], translations['ru'].questions[idx], a, false);
-                                isStandard = true; break;
-                            }
-                        }
-                        if (!isStandard) addQuestionItem('custom-' + Math.random(), qKey, qKey, a, true);
-                    });
-                }
-            }
         };
 
         window.openAddDeferredForm = (bookId = null) => {
@@ -1340,14 +1536,14 @@
 
         window.removeMedia = (index) => { currentMediaFiles.splice(index, 1); renderMediaEditList(); };
 
-        window.toggleQuestion = (el, qIndex) => {
+        window.toggleDynamicQuestion = (el, qKey) => {
             el.classList.toggle('selected');
-            const ruQ = translations['ru'].questions[qIndex];
-            const localQ = translations[currentLang].questions[qIndex];
-            const id = 'q-' + qIndex;
+            const id = 'q-' + qKey;
             if (el.classList.contains('selected')) {
-                addQuestionItem(id, localQ, ruQ, '', false);
+                el.setAttribute('data-tooltip', t('tooltipRemoveQ'));
+                addQuestionItem(id, t(qKey), translations['ru'][qKey], '', false);
             } else {
+                el.setAttribute('data-tooltip', t('tooltipAddQ'));
                 document.getElementById(id)?.remove();
             }
         };
@@ -1358,15 +1554,18 @@
             if(q) {
                 addQuestionItem('custom-' + Date.now(), q, q, '', true);
                 input.value = '';
+                document.getElementById('btn-add-custom-q').classList.remove('ready');
             }
         }
 
         window.removeQuestionItem = (btn, id) => {
             btn.closest('.q-item').remove();
             // Находим соответствующий чип в облаке и снимаем выделение
-            const chip = document.getElementById('chip-' + id);
+            const chipId = id.startsWith('q-') ? id.substring(2) : id;
+            const chip = document.getElementById('chip-' + chipId);
             if (chip) {
                 chip.classList.remove('selected');
+                chip.setAttribute('data-tooltip', t('tooltipAddQ'));
             }
         };
 
@@ -1602,15 +1801,30 @@
             const originalBodyPadding = document.body.style.padding;
             const originalMinWidth = document.body.style.minWidth;
             
+            // Фиксируем десктопные размеры для мобильных устройств
+            const originalWidth = document.body.style.width;
+            const originalHtmlWidth = document.documentElement.style.width;
+            const originalTextAdjust = document.body.style.webkitTextSizeAdjust;
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            const originalViewport = viewportMeta ? viewportMeta.content : '';
+            
+            // Временно отключаем мобильное масштабирование
+            if (viewportMeta) viewportMeta.content = 'width=800, initial-scale=1.0';
+            
             document.documentElement.style.backgroundColor = '#ffffff';
+            document.documentElement.style.width = '800px';
+            
             document.body.style.backgroundColor = '#ffffff';
             document.body.style.overflowX = 'visible'; 
             document.body.style.margin = '0';
             document.body.style.padding = '0';
             document.body.style.minWidth = '800px';
+            document.body.style.width = '800px';
+            document.body.style.webkitTextSizeAdjust = '100%'; // Запрещаем браузеру увеличивать шрифты
 
             const pdfContainer = document.createElement('div');
-            pdfContainer.style.cssText = 'width: 800px; padding: 40px 60px; background: #ffffff; color: #111111; font-family: "Montserrat", sans-serif; box-sizing: border-box; margin: 0; display: block; text-align: left; position: relative;';
+            // Добавили !important, чтобы ни одни стили не перебили ширину
+            pdfContainer.style.cssText = 'width: 800px !important; min-width: 800px !important; max-width: none !important; padding: 40px 60px; background: #ffffff; color: #111111; font-family: "Montserrat", sans-serif; box-sizing: border-box; margin: 0; display: block; text-align: left; position: relative;';
 
             const mName = translations[currentLang].months[getMonthIndex(b.month)];
             const yStr = currentLang === 'ru' ? `${b.year} г.` : b.year;
@@ -1697,12 +1911,22 @@
             } finally {
                 document.body.removeChild(pdfContainer);
                 document.body.removeChild(loader);
+                
+                // Возвращаем все оригинальные стили на место
                 document.documentElement.style.backgroundColor = originalHtmlBg;
+                document.documentElement.style.width = originalHtmlWidth;
+                
                 document.body.style.backgroundColor = originalBodyBg;
                 document.body.style.overflowX = originalOverflowX; 
                 document.body.style.margin = originalBodyMargin;
                 document.body.style.padding = originalBodyPadding;
                 document.body.style.minWidth = originalMinWidth;
+                document.body.style.width = originalWidth;
+                document.body.style.webkitTextSizeAdjust = originalTextAdjust;
+                
+                // Возвращаем мобильный мета-тег
+                if (viewportMeta) viewportMeta.content = originalViewport;
+                
                 originalChildren.forEach(item => { item.el.style.display = item.display; });
                 window.scrollTo(0, scrollY);
             }
@@ -1740,18 +1964,13 @@
             const isViewOpen = !document.getElementById('tab-view').classList.contains('hidden');
             
             if (isAddOpen) {
-                document.getElementById('q-cloud').innerHTML = translations[currentLang].questions.map((q, i) => { 
-                    const active = !!document.getElementById('q-' + i); 
-                    return `<div class="q-chip ${active ? 'selected' : ''}" id="chip-q-${i}" onclick="window.toggleQuestion(this, ${i})">${q}</div>`; 
-                }).join('');
+                renderQuestionsCloud();
                 
                 document.querySelectorAll('.q-item').forEach(item => {
                     const label = item.querySelector('label');
-                    const key = label.getAttribute('data-storage-key');
-                    for (const l in translations) {
-                        const idx = translations[l].questions.indexOf(key);
-                        if (idx !== -1) { label.innerText = translations[currentLang].questions[idx]; break; }
-                    }
+                    const storageKey = label.getAttribute('data-storage-key');
+                    const key = getKeyByRuString(storageKey);
+                    if (key) label.innerText = t(key);
                 });
                 
                 document.querySelectorAll('.rating-row .rating-label').forEach((el, i) => {
