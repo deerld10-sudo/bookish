@@ -164,7 +164,16 @@
             border: 1px solid rgba(255,255,255,0.05); color: var(--tg-hint);
         }
         .add-card .plus { font-size: 24px; font-weight: 300; margin-bottom: 8px; }
-        .add-card .text { font-size: 13px; font-weight: 500; text-align: center; }
+        .add-card .text { font-size: 12px; font-weight: 600; text-align: center; font-family: 'Montserrat', sans-serif; line-height: 1.3; }
+
+        .hide-desktop { display: none; }
+        .hide-mobile { display: inline; }
+
+        @media (max-width: 768px) {
+            .add-card .text { font-size: 10px; }
+            .hide-desktop { display: inline; }
+            .hide-mobile { display: none; }
+        }
         
         .rating-badge { 
             position: absolute; top: -6px; right: -6px; font-size: 11px; font-weight: 700; 
@@ -518,7 +527,11 @@
         .thought-card-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .thought-card-content { display: flex; flex-direction: column; gap: 8px; }
         .thought-card-q { font-size: 13px; color: var(--tg-hint); font-style: italic; }
-        .thought-card-a { font-size: 15px; line-height: 1.6; color: var(--tg-text); font-weight: 400; white-space: pre-wrap; }
+        .thought-card-a { font-size: 14px; line-height: 1.6; color: var(--tg-text); font-weight: 400; white-space: pre-wrap; }
+        
+        @media (max-width: 768px) {
+            .thought-card-a { font-size: 12px; }
+        }
         
         .zk-smart-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 16px;}
         .zk-smart-links-title { font-size: 12px; color: var(--tg-hint); margin-right: 4px; display: flex; align-items: center; gap: 4px; }
@@ -786,7 +799,7 @@
                 navAll: "Все книги", navRating: "Рейтинг", navMonths: "Месяцы", navAuthors: "Авторы",
                 navTags: "Хэштеги", navCards: "Картотека", navGoal: "Цели", navDeferred: "Wishlist", btnAddBook: "+ Книга",
                 btnBack: "Назад", searchPlaceholder: "Поиск по названию или автору...", searchCardsPlaceholder: "Поиск по мыслям и темам...",
-                addBookCard: "Добавить книгу", planBookCard: "Запланировать<br>книгу",
+                addBookCard: "Добавить<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>книгу", planBookCard: "Запланировать<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>книгу",
                 goalTitle: "Цель чтения на год", booksToGoal: "до цели!", keepReading: "Продолжайте читать",
                 goalReached: "Цель достигнута! 🎉", youRead: "Вы прочитали", inThisYear: "в этом году.",
                 addCover: "Добавить обложку", inputTitle: "Название книги", inputAuthor: "Автор (через запятую)",
@@ -818,7 +831,7 @@
                 navAll: "All books", navRating: "Rating", navMonths: "Months", navAuthors: "Authors",
                 navTags: "Hashtags", navCards: "Cards", navGoal: "Goals", navDeferred: "Wishlist", btnAddBook: "+ Book",
                 btnBack: "Back", searchPlaceholder: "Search by title or author...", searchCardsPlaceholder: "Search thoughts and themes...",
-                addBookCard: "Add book", planBookCard: "Plan a<br>book",
+                addBookCard: "Add<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>book", planBookCard: "Plan a<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>book",
                 goalTitle: "Yearly reading goal", booksToGoal: "to goal!", keepReading: "Keep reading",
                 goalReached: "Goal reached! 🎉", youRead: "You have read", inThisYear: "this year.",
                 addCover: "Add cover", inputTitle: "Book title", inputAuthor: "Author (comma separated)",
@@ -850,7 +863,7 @@
                 navAll: "Todos", navRating: "Ranking", navMonths: "Meses", navAuthors: "Autores",
                 navTags: "Hashtags", navCards: "Tarjetas", navGoal: "Objetivos", navDeferred: "Wishlist", btnAddBook: "+ Libro",
                 btnBack: "Atrás", searchPlaceholder: "Buscar por título o autor...", searchCardsPlaceholder: "Buscar pensamientos y temas...",
-                addBookCard: "Añadir libro", planBookCard: "Planear<br>libro",
+                addBookCard: "Añadir<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>libro", planBookCard: "Planear<span class='hide-desktop'><br></span><span class='hide-mobile'> </span>libro",
                 goalTitle: "Meta de lectura anual", booksToGoal: "para la meta!", keepReading: "Sigue leyendo",
                 goalReached: "¡Meta alcanzada! 🎉", youRead: "Has leído", inThisYear: "este año.",
                 addCover: "Añadir portada", inputTitle: "Título del libro", inputAuthor: "Autor (separados por coma)",
